@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "D:\\ProjectPRN\\ProjectGr3\\DataAccess\\DataAccess.csproj": {}
+    "D:\\PRJ\\GITHUB\\PRN212-Project\\DataAccess\\DataAccess.csproj": {}
   },
   "projects": {
-    "D:\\ProjectPRN\\ProjectGr3\\DataAccess\\DataAccess.csproj": {
+    "D:\\PRJ\\GITHUB\\PRN212-Project\\DataAccess\\DataAccess.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\ProjectPRN\\ProjectGr3\\DataAccess\\DataAccess.csproj",
+        "projectUniqueName": "D:\\PRJ\\GITHUB\\PRN212-Project\\DataAccess\\DataAccess.csproj",
         "projectName": "DataAccess",
-        "projectPath": "D:\\ProjectPRN\\ProjectGr3\\DataAccess\\DataAccess.csproj",
-        "packagesPath": "C:\\Users\\ng hoang\\.nuget\\packages\\",
-        "outputPath": "D:\\ProjectPRN\\ProjectGr3\\DataAccess\\obj\\",
+        "projectPath": "D:\\PRJ\\GITHUB\\PRN212-Project\\DataAccess\\DataAccess.csproj",
+        "packagesPath": "C:\\Users\\OS\\.nuget\\packages\\",
+        "outputPath": "D:\\PRJ\\GITHUB\\PRN212-Project\\DataAccess\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\ng hoang\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\OS\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -52,17 +52,17 @@
           "dependencies": {
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
-              "version": "[8.0.0, )"
+              "version": "[8.0.25, )"
             },
             "Microsoft.EntityFrameworkCore.SqlServer": {
               "target": "Package",
-              "version": "[8.0.0, )"
+              "version": "[8.0.25, )"
             },
             "Microsoft.EntityFrameworkCore.Tools": {
               "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
               "suppressParent": "All",
               "target": "Package",
-              "version": "[8.0.0, )"
+              "version": "[8.0.25, )"
             },
             "Microsoft.Extensions.Configuration": {
               "target": "Package",
@@ -70,11 +70,11 @@
             },
             "Microsoft.Extensions.Configuration.Binder": {
               "target": "Package",
-              "version": "[8.0.0, )"
+              "version": "[8.0.2, )"
             },
             "Microsoft.Extensions.Configuration.Json": {
               "target": "Package",
-              "version": "[8.0.0, )"
+              "version": "[8.0.1, )"
             }
           },
           "imports": [
@@ -88,20 +88,6 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "downloadDependencies": [
-            {
-              "name": "Microsoft.AspNetCore.App.Ref",
-              "version": "[8.0.25, 8.0.25]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Ref",
-              "version": "[8.0.25, 8.0.25]"
-            },
-            {
-              "name": "Microsoft.WindowsDesktop.App.Ref",
-              "version": "[8.0.25, 8.0.25]"
-            }
-          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
