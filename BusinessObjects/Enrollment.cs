@@ -12,7 +12,7 @@ namespace BusinessObjects
         public int StudentId { get; set; }
         public int ClassId { get; set; }
         public DateTime RegisteredAt { get; set; } = DateTime.Now;
-        public string Status { get; set; } = "Pending"; // Pending/Approved/Rejected
+        public string Status { get; set; } = "Pending"; 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
     }
 }
