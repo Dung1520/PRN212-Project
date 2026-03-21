@@ -59,9 +59,9 @@ namespace DataAccess
             .HasForeignKey(s => s.ClassId);
         }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder options)
-            => options.UseSqlServer(
-                "Server=.;Database=LCTMS;Trusted_Connection=True;TrustServerCertificate=True;");
+        //protected override void OnConfiguring(DbContextOptionsBuilder options)
+        //    => options.UseSqlServer(
+        //        "Server=.;Database=LCTMS;Trusted_Connection=True;TrustServerCertificate=True;");
 
 
         private static void ConfigureAdmin(ModelBuilder modelBuilder)

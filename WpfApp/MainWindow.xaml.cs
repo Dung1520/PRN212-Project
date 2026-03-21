@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using BusinessObjects;
+using System.Windows;
+using WpfApp.View;
 using WpfApp.Views.Admin;
 
 namespace WpfApp
@@ -9,19 +11,10 @@ namespace WpfApp
         {
             InitializeComponent();
 
-            //var window = new RegistrationListWindow();
-            //Application.Current.MainWindow = window;
-            //window.Show();
-            //this.Close();
+            var window = new StudentCourseWindow();
+            Application.Current.MainWindow = window;
+            window.Show();
+            this.Close();
         }
-
-    private void Course_Click(object sender, RoutedEventArgs e)
-        {
-            new Window1_Course_().Show();
-        }
-        private void Class_Click(object sender, RoutedEventArgs e)
-        {
-            new Window2_Class_().Show();
-        }
-    }
+  }
 }
