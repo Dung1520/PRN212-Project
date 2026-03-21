@@ -25,5 +25,7 @@ namespace Repositories
 
         public Teacher? GetTeacherById(int id)
             => _dao.GetTeacherById(id);
+        public Teacher? GetByEmail(string email)
+        => _dao.GetByEmail(email);
     }
 }

@@ -44,5 +44,12 @@ namespace DataAccess
                 .AsNoTracking()
                 .FirstOrDefault(s => s.Id == id);
         }
+
+        public Student? GetByEmail(string email)
+        {
+            using var context = DbContextFactory.CreateDbContext();
+            return context.Students
+                .FirstOrDefault(x => x.Email == email && x.IsActive);
+        }
     }
 }

@@ -14,5 +14,6 @@ namespace Repositories
         List<TeacherListItem> GetTeacherList(string? keyword = null);
         List<Teacher> GetAllTeachers();
         Teacher? GetTeacherById(int id);
+        Teacher? GetByEmail(string email);
     }
 }

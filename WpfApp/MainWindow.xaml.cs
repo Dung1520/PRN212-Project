@@ -12,7 +12,7 @@ namespace WpfApp
         {
             InitializeComponent();
 
-            var window = new ScheduleWindow(1, "Admin");
+            var window = new LoginWindow();
             Application.Current.MainWindow = window;
             window.Show();
             this.Close();

@@ -12,5 +12,6 @@ namespace Repositories
     {
         List<StudentListItem> GetStudentList(string? keyword = null);
         Student? GetStudentById(int id);
+        Student? GetByEmail(string email);
     }
 }
