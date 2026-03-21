@@ -19,14 +19,20 @@ namespace Repositories
             _dao = new ScheduleDAO(context);
         }
 
-        public ScheduleWeekViewModel GetAdminWeeklySchedule(DateTime anyDateInWeek)
-            => _dao.GetAdminWeeklySchedule(anyDateInWeek);
+        public ScheduleWeekViewModel GetAdminWeeklySchedule(DateTime anyDateInWeek, ScheduleFilterViewModel? filter = null)
+            => _dao.GetAdminWeeklySchedule(anyDateInWeek, filter);
 
-        public ScheduleWeekViewModel GetTeacherWeeklySchedule(int teacherId, DateTime anyDateInWeek)
-            => _dao.GetTeacherWeeklySchedule(teacherId, anyDateInWeek);
+        public ScheduleWeekViewModel GetTeacherWeeklySchedule(int teacherId, DateTime anyDateInWeek, ScheduleFilterViewModel? filter = null)
+            => _dao.GetTeacherWeeklySchedule(teacherId, anyDateInWeek, filter);
 
         public ScheduleWeekViewModel GetStudentWeeklySchedule(int studentId, DateTime anyDateInWeek)
             => _dao.GetStudentWeeklySchedule(studentId, anyDateInWeek);
+
+        public ScheduleFilterOptionsViewModel GetAdminScheduleFilterOptions(DateTime anyDateInWeek)
+            => _dao.GetAdminScheduleFilterOptions(anyDateInWeek);
+
+        public ScheduleFilterOptionsViewModel GetTeacherScheduleFilterOptions(int teacherId, DateTime anyDateInWeek)
+            => _dao.GetTeacherScheduleFilterOptions(teacherId, anyDateInWeek);
 
         public AdminScheduleDetailViewModel? GetAdminScheduleDetail(int classId, int dayOfWeek, int slotId)
             => _dao.GetAdminScheduleDetail(classId, dayOfWeek, slotId);

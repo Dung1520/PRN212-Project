@@ -3,28 +3,20 @@ using Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace WpfApp.Views
 {
-    /// <summary>
-    /// Interaction logic for ScheduleWindow.xaml
-    /// </summary>
     public partial class ScheduleWindow : Window
     {
         private readonly IScheduleService _scheduleService;
         private readonly int _currentUserId;
         private readonly string _role;
         private DateTime _currentDate;
+        private ScheduleFilterViewModel _currentFilter = new();
 
         private const int HeaderRowIndex = 0;
         private const int HeaderColumnIndex = 0;
@@ -45,11 +37,39 @@ namespace WpfApp.Views
 
         private void ScheduleWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            BuildGridStructure();
+            ConfigureFilterByRole();
+
+            if (!IsStudent())
+            {
+                LoadFilterOptions();
+            }
+
             LoadSchedule();
         }
 
-        private void BuildGridStructure()
+        private bool IsStudent()
+            => string.Equals(_role, "Student", StringComparison.OrdinalIgnoreCase);
+
+        private bool IsTeacher()
+            => string.Equals(_role, "Teacher", StringComparison.OrdinalIgnoreCase);
+
+        private bool IsAdmin()
+            => string.Equals(_role, "Admin", StringComparison.OrdinalIgnoreCase);
+
+        private void ConfigureFilterByRole()
+        {
+            if (IsStudent())
+            {
+                FilterPanel.Visibility = Visibility.Collapsed;
+                return;
+            }
+
+            TeacherFilterPanel.Visibility = IsAdmin()
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+        }
+
+        private void BuildGridStructure(int bodyRowCount)
         {
             ScheduleGrid.RowDefinitions.Clear();
             ScheduleGrid.ColumnDefinitions.Clear();
@@ -70,7 +90,7 @@ namespace WpfApp.Views
                 Height = new GridLength(HeaderHeight)
             });
 
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < bodyRowCount; i++)
             {
                 ScheduleGrid.RowDefinitions.Add(new RowDefinition
                 {
@@ -79,11 +99,112 @@ namespace WpfApp.Views
             }
         }
 
+        private void LoadFilterOptions()
+        {
+            var options = _scheduleService.GetScheduleFilterOptions(_currentUserId, _role, _currentDate);
+
+            cboTeacher.ItemsSource = options.TeacherOptions;
+            cboCourse.ItemsSource = options.CourseOptions;
+            cboClass.ItemsSource = options.ClassOptions;
+            cboSlot.ItemsSource = options.SlotOptions;
+
+            NormalizeCurrentFilter(options);
+            ApplyCurrentFilterToControls();
+        }
+
+        private void NormalizeCurrentFilter(ScheduleFilterOptionsViewModel options)
+        {
+            if (!ContainsOption(options.TeacherOptions, _currentFilter.TeacherId))
+            {
+                _currentFilter.TeacherId = null;
+            }
+
+            if (!ContainsOption(options.CourseOptions, _currentFilter.CourseId))
+            {
+                _currentFilter.CourseId = null;
+            }
+
+            if (!ContainsOption(options.ClassOptions, _currentFilter.ClassId))
+            {
+                _currentFilter.ClassId = null;
+            }
+
+            if (!ContainsOption(options.SlotOptions, _currentFilter.SlotId))
+            {
+                _currentFilter.SlotId = null;
+            }
+        }
+
+        private bool ContainsOption(IEnumerable<ScheduleFilterOptionItem> options, int? value)
+        {
+            if (!value.HasValue)
+            {
+                return true;
+            }
+
+            return options.Any(x => x.Id == value.Value);
+        }
+
+        private void ApplyCurrentFilterToControls()
+        {
+            txtKeyword.Text = _currentFilter.Keyword ?? string.Empty;
+
+            if (IsAdmin())
+            {
+                cboTeacher.SelectedValue = _currentFilter.TeacherId;
+            }
+
+            cboCourse.SelectedValue = _currentFilter.CourseId;
+            cboClass.SelectedValue = _currentFilter.ClassId;
+            cboSlot.SelectedValue = _currentFilter.SlotId;
+        }
+
+        private void ReadFilterFromControls()
+        {
+            _currentFilter = new ScheduleFilterViewModel
+            {
+                Keyword = string.IsNullOrWhiteSpace(txtKeyword.Text) ? null : txtKeyword.Text.Trim(),
+                TeacherId = IsAdmin() ? GetSelectedInt(cboTeacher) : null,
+                CourseId = GetSelectedInt(cboCourse),
+                ClassId = GetSelectedInt(cboClass),
+                SlotId = GetSelectedInt(cboSlot)
+            };
+        }
+
+        private int? GetSelectedInt(ComboBox comboBox)
+        {
+            if (comboBox.SelectedValue == null)
+            {
+                return null;
+            }
+
+            if (comboBox.SelectedValue is int value)
+            {
+                return value;
+            }
+
+            return int.TryParse(comboBox.SelectedValue.ToString(), out var parsed)
+                ? parsed
+                : (int?)null;
+        }
+
+        private void ResetFilter()
+        {
+            _currentFilter = new ScheduleFilterViewModel();
+            ApplyCurrentFilterToControls();
+        }
+
         private void LoadSchedule()
         {
-            var week = _scheduleService.GetWeeklySchedule(_currentUserId, _role, _currentDate);
+            var week = _scheduleService.GetWeeklySchedule(_currentUserId, _role, _currentDate, _currentFilter);
 
             txtWeekRange.Text = $"Week: {week.WeekStartDate:dd MMM} - {week.WeekEndDate:dd MMM}, {week.WeekEndDate:yyyy}";
+
+            int bodyRowCount = week.Cells
+                .GroupBy(x => new { x.SlotId, x.SlotName, x.StartTime, x.EndTime })
+                .Count();
+
+            BuildGridStructure(Math.Max(1, bodyRowCount));
 
             RenderHeader(week.WeekStartDate);
             RenderBody(week);
@@ -255,7 +376,7 @@ namespace WpfApp.Views
                     Tag = cell
                 };
 
-                if (!string.Equals(_role, "Student", StringComparison.OrdinalIgnoreCase))
+                if (!IsStudent())
                 {
                     classBlock.Cursor = Cursors.Hand;
                     classBlock.MouseLeftButtonUp += ScheduleCell_Click;
@@ -273,7 +394,7 @@ namespace WpfApp.Views
 
         private void ScheduleCell_Click(object sender, MouseButtonEventArgs e)
         {
-            if (string.Equals(_role, "Student", StringComparison.OrdinalIgnoreCase))
+            if (IsStudent())
             {
                 return;
             }
@@ -283,7 +404,7 @@ namespace WpfApp.Views
                 return;
             }
 
-            if (string.Equals(_role, "Admin", StringComparison.OrdinalIgnoreCase))
+            if (IsAdmin())
             {
                 var detail = _scheduleService.GetAdminScheduleDetail(cell.ClassId.Value, cell.DayOfWeek, cell.SlotId);
                 if (detail == null)
@@ -296,7 +417,7 @@ namespace WpfApp.Views
                 return;
             }
 
-            if (string.Equals(_role, "Teacher", StringComparison.OrdinalIgnoreCase))
+            if (IsTeacher())
             {
                 var detail = _scheduleService.GetTeacherScheduleDetail(_currentUserId, cell.ClassId.Value, cell.DayOfWeek, cell.SlotId);
                 if (detail == null)
@@ -309,21 +430,51 @@ namespace WpfApp.Views
             }
         }
 
+        private void btnApplyFilter_Click(object sender, RoutedEventArgs e)
+        {
+            ReadFilterFromControls();
+            LoadSchedule();
+        }
+
+        private void btnResetFilter_Click(object sender, RoutedEventArgs e)
+        {
+            ResetFilter();
+            LoadSchedule();
+        }
+
         private void btnPrevWeek_Click(object sender, RoutedEventArgs e)
         {
             _currentDate = _currentDate.AddDays(-7);
+
+            if (!IsStudent())
+            {
+                LoadFilterOptions();
+            }
+
             LoadSchedule();
         }
 
         private void btnToday_Click(object sender, RoutedEventArgs e)
         {
             _currentDate = DateTime.Today;
+
+            if (!IsStudent())
+            {
+                LoadFilterOptions();
+            }
+
             LoadSchedule();
         }
 
         private void btnNextWeek_Click(object sender, RoutedEventArgs e)
         {
             _currentDate = _currentDate.AddDays(7);
+
+            if (!IsStudent())
+            {
+                LoadFilterOptions();
+            }
+
             LoadSchedule();
         }
     }

@@ -20,20 +20,43 @@ namespace Services
             _repo = repo;
         }
 
-        public ScheduleWeekViewModel GetWeeklySchedule(int currentUserId, string role, DateTime anyDateInWeek)
+        public ScheduleWeekViewModel GetWeeklySchedule(
+            int currentUserId,
+            string role,
+            DateTime anyDateInWeek,
+            ScheduleFilterViewModel? filter = null)
         {
             if (string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase))
             {
-                return _repo.GetAdminWeeklySchedule(anyDateInWeek);
+                return _repo.GetAdminWeeklySchedule(anyDateInWeek, filter);
             }
 
             if (string.Equals(role, "Teacher", StringComparison.OrdinalIgnoreCase))
             {
-                return _repo.GetTeacherWeeklySchedule(currentUserId, anyDateInWeek);
+                return _repo.GetTeacherWeeklySchedule(currentUserId, anyDateInWeek, filter);
             }
 
             return _repo.GetStudentWeeklySchedule(currentUserId, anyDateInWeek);
         }
+
+        public ScheduleFilterOptionsViewModel GetScheduleFilterOptions(
+            int currentUserId,
+            string role,
+            DateTime anyDateInWeek)
+        {
+            if (string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase))
+            {
+                return _repo.GetAdminScheduleFilterOptions(anyDateInWeek);
+            }
+
+            if (string.Equals(role, "Teacher", StringComparison.OrdinalIgnoreCase))
+            {
+                return _repo.GetTeacherScheduleFilterOptions(currentUserId, anyDateInWeek);
+            }
+
+            return new ScheduleFilterOptionsViewModel();
+        }
+
 
         public AdminScheduleDetailViewModel? GetAdminScheduleDetail(int classId, int dayOfWeek, int slotId)
             => _repo.GetAdminScheduleDetail(classId, dayOfWeek, slotId);
