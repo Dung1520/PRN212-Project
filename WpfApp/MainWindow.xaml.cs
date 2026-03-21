@@ -1,6 +1,7 @@
 ﻿using BusinessObjects;
 using System.Windows;
 using WpfApp.View;
+using WpfApp.Views;
 using WpfApp.Views.Admin;
 
 namespace WpfApp
@@ -11,7 +12,7 @@ namespace WpfApp
         {
             InitializeComponent();
 
-            var window = new StudentCourseWindow();
+            var window = new ScheduleWindow(1, "Admin");
             Application.Current.MainWindow = window;
             window.Show();
             this.Close();

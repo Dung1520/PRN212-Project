@@ -2,8 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DataAccess
 {
@@ -12,42 +10,34 @@ namespace DataAccess
         private readonly LctmsDbContext _context;
 
         public ScheduleDAO()
-        public ScheduleDAO(LctmsDbContext context)
         {
             _context = new LctmsDbContext();
+        }
+
+        public ScheduleDAO(LctmsDbContext context)
+        {
             _context = context;
         }
 
+        // =========================
+        // WEEKLY SCHEDULE
+        // =========================
         public ScheduleWeekViewModel GetAdminWeeklySchedule(DateTime anyDateInWeek)
-        // CREATE
-        public void AddSchedule(Schedule schedule)
         {
             return BuildWeeklySchedule(anyDateInWeek, null, null);
-            _context.Schedules.Add(schedule);
-            _context.SaveChanges();
         }
 
         public ScheduleWeekViewModel GetTeacherWeeklySchedule(int teacherId, DateTime anyDateInWeek)
-        // READ ALL
-        public List<Schedule> GetAllSchedules()
         {
             return BuildWeeklySchedule(anyDateInWeek, teacherId, null);
-            return _context.Schedules.ToList();
         }
 
         public ScheduleWeekViewModel GetStudentWeeklySchedule(int studentId, DateTime anyDateInWeek)
-        // READ BY CLASS
-        public List<Schedule> GetSchedulesByClassId(int classId)
         {
             return BuildWeeklySchedule(anyDateInWeek, null, studentId);
-            return _context.Schedules
-                           .Where(s => s.ClassId == classId)
-                           .ToList();
         }
 
         public AdminScheduleDetailViewModel? GetAdminScheduleDetail(int classId, int dayOfWeek, int slotId)
-        // UPDATE
-        public void UpdateSchedule(Schedule schedule)
         {
             var detail =
                 (from sc in _context.Schedules
@@ -75,17 +65,11 @@ namespace DataAccess
                      Capacity = cl.Capacity,
                      Status = cl.Status
                  }).FirstOrDefault();
-            var existing = _context.Schedules
-                                   .FirstOrDefault(s => s.Id == schedule.Id);
 
             if (detail == null)
-            if (existing != null)
             {
                 return null;
             }
-                existing.DayOfWeek = schedule.DayOfWeek;
-                existing.SlotId = schedule.SlotId;
-                existing.RoomName = schedule.RoomName;
 
             detail.StudentNames =
                 (from e in _context.Enrollments
@@ -95,7 +79,6 @@ namespace DataAccess
                  select s.FullName).ToList();
 
             return detail;
-                _context.SaveChanges();
         }
 
         public TeacherScheduleDetailViewModel? GetTeacherScheduleDetail(int teacherId, int classId, int dayOfWeek, int slotId)
@@ -138,8 +121,6 @@ namespace DataAccess
         }
 
         public StudentScheduleDetailViewModel? GetStudentScheduleDetail(int studentId, int classId, int dayOfWeek, int slotId)
-        // DELETE
-        public void DeleteSchedule(int id)
         {
             return
                 (from e in _context.Enrollments
@@ -177,42 +158,39 @@ namespace DataAccess
             var slots = _context.Slots
                 .OrderBy(x => x.StartTime)
                 .ToList();
-            var schedule = _context.Schedules
-                                   .FirstOrDefault(s => s.Id == id);
 
             var rawSchedules =
-                 (from sc in _context.Schedules
-                  join cl in _context.Classes on sc.ClassId equals cl.Id
-                  join c in _context.Courses on cl.CourseId equals c.Id
-                  join sl in _context.Slots on sc.SlotId equals sl.Id
-                  join t in _context.Teachers on cl.TeacherId equals t.Id into teacherJoin
-                  from t in teacherJoin.DefaultIfEmpty()
-                  where cl.StartDate <= weekEnd && cl.EndDate >= weekStart
-                  select new
-                  {
-                      DayOfWeek = Convert.ToInt32(sc.DayOfWeek),
-                      sc.SlotId,
-                      RoomName = sc.RoomName,
-                      ClassId = cl.Id,
-                      ClassCode = cl.ClassCode,
-                      CourseName = c.Name,
-                      TeacherName = t != null ? t.FullName : "N/A",
-                      SlotName = sl.SlotName,
-                      StartTime = sl.StartTime,
-                      EndTime = sl.EndTime,
-                      ClassStartDate = cl.StartDate,
-                      ClassEndDate = cl.EndDate,
-                      TeacherId = cl.TeacherId
-                  }).ToList();
+                (from sc in _context.Schedules
+                 join cl in _context.Classes on sc.ClassId equals cl.Id
+                 join c in _context.Courses on cl.CourseId equals c.Id
+                 join sl in _context.Slots on sc.SlotId equals sl.Id
+                 join t in _context.Teachers on cl.TeacherId equals t.Id into teacherJoin
+                 from t in teacherJoin.DefaultIfEmpty()
+                 where cl.StartDate <= weekEnd && cl.EndDate >= weekStart
+                 select new
+                 {
+                     DayOfWeek = (int)sc.DayOfWeek,
+                     sc.SlotId,
+                     RoomName = sc.RoomName,
+                     ClassId = cl.Id,
+                     ClassCode = cl.ClassCode,
+                     CourseName = c.Name,
+                     TeacherName = t != null ? t.FullName : "N/A",
+                     SlotName = sl.SlotName,
+                     StartTime = sl.StartTime,
+                     EndTime = sl.EndTime,
+                     ClassStartDate = cl.StartDate,
+                     ClassEndDate = cl.EndDate,
+                     TeacherId = cl.TeacherId
+                 }).ToList();
+
             if (teacherId.HasValue)
-            if (schedule != null)
             {
                 rawSchedules = rawSchedules
                     .Where(x => x.TeacherId == teacherId.Value)
                     .ToList();
-                _context.Schedules.Remove(schedule);
-                _context.SaveChanges();
             }
+
             if (studentId.HasValue)
             {
                 var approvedClassIds = _context.Enrollments
@@ -230,19 +208,16 @@ namespace DataAccess
             foreach (var slot in slots)
             {
                 for (int day = 1; day <= 7; day++)
-        // DELETE BY CLASS (rất quan trọng)
-        public void DeleteByClassId(int classId)
                 {
                     var actualDate = weekStart.AddDays(day - 1);
+
                     var existings = rawSchedules
-                         .Where(x =>
-                             x.SlotId == slot.Id &&
-                             x.DayOfWeek == day &&
-                             actualDate.Date >= x.ClassStartDate.Date &&
-                             actualDate.Date <= x.ClassEndDate.Date)
-            var schedules = _context.Schedules
-                                    .Where(s => s.ClassId == classId)
-                         .ToList();
+                        .Where(x =>
+                            x.SlotId == slot.Id &&
+                            x.DayOfWeek == day &&
+                            actualDate.Date >= x.ClassStartDate.Date &&
+                            actualDate.Date <= x.ClassEndDate.Date)
+                        .ToList();
 
                     if (existings.Any())
                     {
@@ -288,10 +263,68 @@ namespace DataAccess
         private DateTime GetWeekStart(DateTime date)
         {
             int day = (int)date.DayOfWeek;
-            day = day == 0 ? 7 : day;
+            day = day == 0 ? 7 : day; // Sunday => 7
             return date.Date.AddDays(-(day - 1));
-            _context.Schedules.RemoveRange(schedules);
+        }
+
+        // =========================
+        // CRUD
+        // =========================
+        public void AddSchedule(Schedule schedule)
+        {
+            _context.Schedules.Add(schedule);
             _context.SaveChanges();
+        }
+
+        public List<Schedule> GetAllSchedules()
+        {
+            return _context.Schedules.ToList();
+        }
+
+        public List<Schedule> GetSchedulesByClassId(int classId)
+        {
+            return _context.Schedules
+                .Where(s => s.ClassId == classId)
+                .ToList();
+        }
+
+        public void UpdateSchedule(Schedule schedule)
+        {
+            var existing = _context.Schedules.FirstOrDefault(s => s.Id == schedule.Id);
+
+            if (existing != null)
+            {
+                existing.ClassId = schedule.ClassId;
+                existing.DayOfWeek = schedule.DayOfWeek;
+                existing.SlotId = schedule.SlotId;
+                existing.RoomName = schedule.RoomName;
+
+                _context.SaveChanges();
+            }
+        }
+
+        public void DeleteSchedule(int id)
+        {
+            var schedule = _context.Schedules.FirstOrDefault(s => s.Id == id);
+
+            if (schedule != null)
+            {
+                _context.Schedules.Remove(schedule);
+                _context.SaveChanges();
+            }
+        }
+
+        public void DeleteByClassId(int classId)
+        {
+            var schedules = _context.Schedules
+                .Where(s => s.ClassId == classId)
+                .ToList();
+
+            if (schedules.Any())
+            {
+                _context.Schedules.RemoveRange(schedules);
+                _context.SaveChanges();
+            }
         }
     }
 }
