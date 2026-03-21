@@ -1,0 +1,105 @@
+﻿<Window x:Class="WpfApp.View.StudentCourseWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="LCTMS - Student Dashboard: Course List"
+        Height="650" Width="1200"
+        WindowStartupLocation="CenterScreen">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <DockPanel Grid.Row="0" Margin="0,0,0,15">
+            <TextBlock Text="LCTMS - Student Dashboard: Course List"
+                       FontSize="22"
+                       FontWeight="Bold"
+                       VerticalAlignment="Center"
+                       DockPanel.Dock="Left"/>
+
+            <TextBlock x:Name="txtUser"
+                       Text="User: Student_Alpha"
+                       FontSize="16"
+                       FontWeight="SemiBold"
+                       HorizontalAlignment="Right"
+                       VerticalAlignment="Center"
+                       DockPanel.Dock="Right"/>
+        </DockPanel>
+
+        <!-- Search + Filter -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,15">
+            <StackPanel Margin="0,0,20,0">
+                <TextBlock Text="Search Course (Name/Code)" Margin="0,0,0,5"/>
+                <TextBox x:Name="txtSearch" Width="250" Height="30"/>
+            </StackPanel>
+
+            <StackPanel Margin="0,0,20,0">
+                <TextBlock Text="Status Filter" Margin="0,0,0,5"/>
+                <ComboBox x:Name="cbStatus" Width="150" Height="30" SelectionChanged="cbStatus_SelectionChanged">
+                    <ComboBoxItem Content="All" IsSelected="True"/>
+                    <ComboBoxItem Content="Open"/>
+                    <ComboBoxItem Content="Closed"/>
+                </ComboBox>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom">
+                <Button Content="Search"
+            Width="100"
+            Height="30"
+            Margin="0,0,10,0"
+            Click="BtnSearch_Click"/>
+
+                <Button Content="Reset"
+            Width="100"
+            Height="30"
+            Click="BtnReset_Click"/>
+            </StackPanel>
+
+
+        </StackPanel>
+
+        <!-- Course List -->
+        <DataGrid x:Name="dgCourses"
+                  Grid.Row="2"
+                  AutoGenerateColumns="False"
+                  CanUserAddRows="False"
+                  IsReadOnly="True"
+                  HeadersVisibility="Column"
+                  RowHeight="40"
+                  Margin="0,10,0,0">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="CourseCode" Binding="{Binding CourseCode}" Width="120"/>
+                <DataGridTextColumn Header="CourseName" Binding="{Binding CourseName}" Width="220"/>
+                <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="120"/>
+                <DataGridTextColumn Header="DurationWeeks" Binding="{Binding DurationWeeks}" Width="120"/>
+                <DataGridTextColumn Header="Fee" Binding="{Binding Fee, StringFormat=N0}" Width="120"/>
+                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100"/>
+
+                <DataGridTemplateColumn Header="Actions" Width="280">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="Available Classes"
+                                        Margin="5,0,5,0"
+                                        Padding="10,5"
+                                        Tag="{Binding Id}"
+                                        Click="BtnAvailableClasses_Click"/>
+                                <Button Content="Detail Course Information"
+                                        Margin="5,0,5,0"
+                                        Padding="10,5"
+                                        Tag="{Binding Id}"
+                                        Click="BtnCourseDetail_Click"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Window>

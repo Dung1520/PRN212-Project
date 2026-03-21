@@ -1,7 +1,9 @@
 ﻿using BusinessObjects;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-
+using Microsoft.Extensions.Configuration;
+using System;
+using System.IO;
 namespace DataAccess
 {
     public class LctmsDbContext : DbContext
@@ -23,6 +25,20 @@ namespace DataAccess
         public virtual DbSet<Enrollment> Enrollments { get; set; } = null!;
         public virtual DbSet<Slot> Slots { get; set; } = null!;
         public virtual DbSet<Schedule> Schedules { get; set; } = null!;
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if (!optionsBuilder.IsConfigured)
+            {
+                IConfiguration config = new ConfigurationBuilder()
+                    .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+                    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                    .Build();
+
+                string? connectionString = config.GetConnectionString("DefaultConnection");
+                optionsBuilder.UseSqlServer(connectionString);
+            }
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -314,6 +330,9 @@ namespace DataAccess
                 entity.HasCheckConstraint("CK_Class_Capacity", "[Capacity] > 0");
                 entity.HasCheckConstraint("CK_Class_Status",
                     "[Status] IN (N'Open', N'Full', N'Closed')");
+
+                entity.HasCheckConstraint("CK_Enrollment_Status",
+    "[Status] IN (N'Pending', N'Approved', N'Rejected', N'Cancel')");
             });
         }
 

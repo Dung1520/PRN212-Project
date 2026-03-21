@@ -1,0 +1,76 @@
+﻿<Window x:Class="WpfApp.View.StudentEnrollmentWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WpfApp.View"
+        mc:Ignorable="d"
+        Title="StudentEnrollmentWindow" Height="450" Width="800">
+    <Grid>
+        <DataGrid x:Name="dgEnrollments" AutoGenerateColumns="False">
+
+            <DataGrid.Columns>
+
+                <DataGridTextColumn Header="Course" Binding="{Binding CourseName}" />
+                <DataGridTextColumn Header="Class" Binding="{Binding ClassCode}" />
+                <DataGridTextColumn Header="Start" Binding="{Binding StartDate, StringFormat=dd/MM/yyyy}" />
+                <DataGridTextColumn Header="End" Binding="{Binding EndDate, StringFormat=dd/MM/yyyy}" />
+                <DataGridTextColumn Header="Day" Binding="{Binding DayOfWeek}" />
+                <DataGridTextColumn Header="Slot" Binding="{Binding Slot}" />
+
+                <!-- ✅ Status có màu -->
+                <DataGridTextColumn Header="Status" Binding="{Binding Status}">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Style.Triggers>
+
+                                <DataTrigger Binding="{Binding Status}" Value="Pending">
+                                    <Setter Property="Foreground" Value="Orange"/>
+                                </DataTrigger>
+
+                                <DataTrigger Binding="{Binding Status}" Value="Approved">
+                                    <Setter Property="Foreground" Value="Green"/>
+                                </DataTrigger>
+
+                                <DataTrigger Binding="{Binding Status}" Value="Cancel">
+                                    <Setter Property="Foreground" Value="Red"/>
+                                </DataTrigger>
+
+                            </Style.Triggers>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+
+                <!-- Button Cancel -->
+                <DataGridTemplateColumn Header="Action">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+
+                            <Button Content="Cancel"
+                            Click="BtnCancel_Click">
+
+                                <Button.Style>
+                                    <Style TargetType="Button">
+
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Status}" Value="Pending">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+
+                                    </Style>
+                                </Button.Style>
+
+                            </Button>
+
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+            </DataGrid.Columns>
+
+        </DataGrid>
+    </Grid>
+</Window>
