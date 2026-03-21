@@ -1,0 +1,112 @@
+﻿<Window x:Class="WpfApp.View.StudentClassWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Class List" Height="500" Width="900"
+        WindowStartupLocation="CenterScreen">
+
+    <Grid Margin="15">
+
+        <StackPanel>
+
+            <!-- Header -->
+            <TextBlock x:Name="txtHeader"
+                   FontSize="20"
+                   FontWeight="Bold"
+                   Foreground="#2C3E50"
+                   Margin="0,0,0,15"/>
+            <TextBlock x:Name="txtNotice"
+           Foreground="Red"
+           FontWeight="Bold"
+           Margin="0,0,0,10"
+           Visibility="Collapsed"/>
+
+            <!-- DataGrid -->
+            <DataGrid x:Name="dgClasses"
+          AutoGenerateColumns="False"
+          Height="320"
+          RowHeight="35"
+          CanUserAddRows="False"  
+          HeadersVisibility="Column"
+          GridLinesVisibility="None"
+          BorderThickness="0"
+          Background="White"
+          AlternatingRowBackground="#F5F7FA"
+          SelectionChanged="dgClasses_SelectionChanged">
+
+                <DataGrid.Columns>
+
+                    <DataGridTextColumn Header="Class Code" Binding="{Binding ClassCode}" Width="*"/>
+
+                    <DataGridTextColumn Header="Start Date"
+                                    Binding="{Binding StartDate, StringFormat=dd/MM/yyyy}"
+                                    Width="*"/>
+
+                    <DataGridTextColumn Header="End Date"
+                                    Binding="{Binding EndDate, StringFormat=dd/MM/yyyy}"
+                                    Width="*"/>
+
+                    <DataGridTextColumn Header="Capacity" Binding="{Binding Capacity}" Width="*"/>
+
+                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="0.7*"/>
+                    <DataGridTextColumn Header="Day" Binding="{Binding DayOfWeek}" Width="1.5*"/>
+                    <DataGridTextColumn Header="Slot" Binding="{Binding Slot}" Width="2.1*"/>
+
+                    <!-- Button đẹp hơn -->
+                    <DataGridTemplateColumn Header="Actions" Width="150">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Padding="10,5"
+        Foreground="White"
+        BorderThickness="0"
+        Cursor="Hand"
+        Click="BtnAction_Click">
+
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+
+                                            <!-- Default -->
+                                            <Setter Property="Content" Value="Register"/>
+                                            <Setter Property="Background" Value="#3498DB"/>
+
+                                            <Style.Triggers>
+
+                                                <!-- Pending → Cancel -->
+                                                <DataTrigger Binding="{Binding EnrollmentStatus}" Value="Pending">
+                                                    <Setter Property="Content" Value="Cancel"/>
+                                                    <Setter Property="Background" Value="#E67E22"/>
+                                                </DataTrigger>
+
+                                                <!-- Approved → Disabled -->
+                                                <DataTrigger Binding="{Binding EnrollmentStatus}" Value="Approved">
+                                                    <Setter Property="Content" Value="Approved"/>
+                                                    <Setter Property="IsEnabled" Value="False"/>
+                                                    <Setter Property="Background" Value="#95A5A6"/>
+                                                </DataTrigger>
+
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+
+                                </Button>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <!-- Back button -->
+            <Button Content="Back"
+                Width="120"
+                Height="35"
+                Margin="0,15,0,0"
+                Background="#95A5A6"
+                Foreground="White"
+                BorderThickness="0"
+                HorizontalAlignment="Left"
+                Cursor="Hand"
+                Click="BtnBack_Click"/>
+
+        </StackPanel>
+    </Grid>
+</Window>
