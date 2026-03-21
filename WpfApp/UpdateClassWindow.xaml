@@ -1,0 +1,156 @@
+﻿<Window x:Class="WpfApp.UpdateClassWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WpfApp"
+        mc:Ignorable="d"
+        Title="UpdateClassWindow" Height="450" Width="800">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- HEADER -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,15">
+            <TextBlock Text="Cập nhật lớp học" FontSize="22" FontWeight="Bold"/>
+            <TextBlock Text="Thiết lập lớp và lịch học"/>
+        </StackPanel>
+
+        <!-- CLASS FORM -->
+        <Border Grid.Row="1" Padding="10" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="6">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+
+                <!-- Code -->
+                <StackPanel Grid.Row="0" Grid.Column="0">
+                    <TextBlock Text="Mã lớp"/>
+                    <TextBox x:Name="txtClassCode"/>
+                </StackPanel>
+
+                <!-- Capacity -->
+                <StackPanel Grid.Row="0" Grid.Column="2">
+                    <TextBlock Text="Sĩ số"/>
+                    <TextBox x:Name="txtCapacity"/>
+                </StackPanel>
+
+                <!-- Course -->
+                <StackPanel Grid.Row="1" Grid.Column="0">
+                    <TextBlock Text="Khóa học"/>
+                    <ComboBox x:Name="cbCourse"
+                          DisplayMemberPath="Name"
+                          SelectedValuePath="Id"/>
+                </StackPanel>
+
+                <!-- Teacher -->
+                <StackPanel Grid.Row="1" Grid.Column="2">
+                    <TextBlock Text="Giáo viên"/>
+                    <ComboBox x:Name="cbTeacher"
+                          DisplayMemberPath="FullName"
+                          SelectedValuePath="Id"/>
+                </StackPanel>
+
+                <!-- Dates -->
+                <StackPanel Grid.Row="2" Grid.Column="0">
+                    <TextBlock Text="Start Date"/>
+                    <DatePicker x:Name="dpStartDate"/>
+                </StackPanel>
+
+                <StackPanel Grid.Row="2" Grid.Column="2">
+                    <TextBlock Text="End Date"/>
+                    <DatePicker x:Name="dpEndDate"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- SCHEDULE -->
+        <GroupBox Header="Lịch học" Grid.Row="2" Margin="0,15,0,0">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Add -->
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                        <ComboBox x:Name="cbDay" Width="100">
+                            <ComboBoxItem Content="Thứ 2" Tag="2" IsSelected="True"/>
+                            <ComboBoxItem Content="Thứ 3" Tag="3"/>
+                            <ComboBoxItem Content="Thứ 4" Tag="4"/>
+                            <ComboBoxItem Content="Thứ 5" Tag="5"/>
+                            <ComboBoxItem Content="Thứ 6" Tag="6"/>
+                            <ComboBoxItem Content="Thứ 7" Tag="7"/>
+                            <ComboBoxItem Content="CN" Tag="1"/>
+                        </ComboBox>
+
+                        <ComboBox x:Name="cbSlot"
+                              Width="100"
+                              Margin="10,0"
+                              DisplayMemberPath="SlotName"
+                              SelectedValuePath="Id"/>
+
+                        <ComboBox x:Name="cbRoom" Width="120" Margin="10,0"/>
+
+                        <Button Content="Thêm"
+                            Click="AddSchedule_Click"
+                            Background="#10B981"
+                            Foreground="White"/>
+                    </StackPanel>
+
+                    <!-- Grid -->
+                    <DataGrid x:Name="dgSchedules"
+                          Grid.Row="1"
+                          AutoGenerateColumns="False"
+                          Height="200">
+
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Thứ" Binding="{Binding DayOfWeek}"/>
+                            <DataGridTextColumn Header="Slot" Binding="{Binding SlotId}"/>
+                            <DataGridTextColumn Header="Phòng" Binding="{Binding RoomName}"/>
+
+                            <DataGridTemplateColumn Width="80">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Content="Xóa"
+                                            Click="RemoveSchedule_Click"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+
+                    </DataGrid>
+                </Grid>
+            </ScrollViewer>
+        </GroupBox>
+
+        <!-- BUTTON -->
+        <StackPanel Grid.Row="3"
+                Orientation="Horizontal"
+                HorizontalAlignment="Right"
+                Margin="0,15,0,0">
+
+            <Button Content="Hủy" Width="80" Click="Cancel_Click"/>
+
+            <Button Content="Cập nhật"
+                Width="120"
+                Margin="10,0,0,0"
+                Background="#4F46E5"
+                Foreground="White"
+                Click="Update_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

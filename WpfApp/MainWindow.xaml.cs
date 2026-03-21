@@ -15,4 +15,13 @@ namespace WpfApp
             this.Close();
         }
     }
+
+    private void Course_Click(object sender, RoutedEventArgs e)
+    {
+        new Window1_Course_().Show();
+    }
+    private void Class_Click(object sender, RoutedEventArgs e)
+    {
+        new Window2_Class_().Show();
+    }
 }

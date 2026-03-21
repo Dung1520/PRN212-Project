@@ -7,23 +7,23 @@ using System.Threading.Tasks;
 
 namespace DataAccess
 {
-    public class TeacherDAO
+    public class SlotDAO
     {
         private readonly LctmsDbContext _context;
 
-        public TeacherDAO(LctmsDbContext context)
+        public SlotDAO(LctmsDbContext context)
         {
             _context = context;
         }
 
-        public List<Teacher> GetAllTeachers()
+        public List<Slot> GetAllSlots()
         {
-            return _context.Teachers.ToList();
+            return _context.Slots.ToList();
         }
 
-        public Teacher? GetTeacherById(int id)
+        public Slot? GetSlotById(int id)
         {
-            return _context.Teachers.FirstOrDefault(t => t.Id == id);
+            return _context.Slots.FirstOrDefault(s => s.Id == id);
         }
     }
 }

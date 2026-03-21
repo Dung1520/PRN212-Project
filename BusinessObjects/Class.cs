@@ -18,5 +18,7 @@ namespace BusinessObjects
         public int Capacity { get; set; }
         public string Status { get; set; } = "Open";
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        public ICollection<Schedule> Schedules { get; set; }
     }
 }

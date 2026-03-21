@@ -36,7 +36,17 @@ namespace DataAccess
             ConfigureEnrollment(modelBuilder);
             ConfigureSlot(modelBuilder);
             ConfigureSchedule(modelBuilder);
+
+            modelBuilder.Entity<Schedule>()
+            .HasOne(s => s.Class)
+            .WithMany(c => c.Schedules)
+            .HasForeignKey(s => s.ClassId);
         }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder options)
+            => options.UseSqlServer(
+                "Server=.;Database=LCTMS;Trusted_Connection=True;TrustServerCertificate=True;");
+
 
         private static void ConfigureAdmin(ModelBuilder modelBuilder)
         {
@@ -360,7 +370,7 @@ namespace DataAccess
                     .HasConstraintName("FK_Enrollment_Class");
 
                 entity.HasCheckConstraint("CK_Enrollment_Status",
-                    "[Status] IN (N'Pending', N'Approved', N'Rejected')");
+                    "[Status] IN (N'Pending', N'Approved', N'Rejected', N'Rejected')");
             });
         }
 
