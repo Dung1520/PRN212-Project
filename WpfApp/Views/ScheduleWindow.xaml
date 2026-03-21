@@ -6,8 +6,8 @@
         xmlns:local="clr-namespace:WpfApp.Views"
         mc:Ignorable="d"
         Title="Schedule"
-        Height="650"
-        Width="1100"
+        Height="720"
+        Width="1180"
         WindowStartupLocation="CenterScreen"
         Background="#F7F7F7">
 
@@ -15,10 +15,10 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Header -->
         <Border Grid.Row="0"
                 Padding="0,0,0,10"
                 BorderBrush="#D0D0D0"
@@ -30,8 +30,78 @@
                        VerticalAlignment="Center"/>
         </Border>
 
-        <!-- Week navigation -->
-        <Grid Grid.Row="1" Margin="0,14,0,16">
+        <Border x:Name="FilterPanel"
+                Grid.Row="1"
+                Margin="0,14,0,0"
+                Padding="14"
+                Background="White"
+                BorderBrush="#D9D9D9"
+                BorderThickness="1"
+                CornerRadius="4">
+            <WrapPanel>
+                <StackPanel Margin="0,0,12,10">
+                    <TextBlock Text="Keyword" Margin="0,0,0,4" FontWeight="SemiBold"/>
+                    <TextBox x:Name="txtKeyword"
+                             Width="230"
+                             Height="32"
+                             VerticalContentAlignment="Center"
+                             ToolTip="Search by class, course, teacher or room"/>
+                </StackPanel>
+
+                <StackPanel x:Name="TeacherFilterPanel" Margin="0,0,12,10" Visibility="Collapsed">
+                    <TextBlock Text="Teacher" Margin="0,0,0,4" FontWeight="SemiBold"/>
+                    <ComboBox x:Name="cboTeacher"
+                              Width="190"
+                              Height="32"
+                              DisplayMemberPath="DisplayName"
+                              SelectedValuePath="Id"/>
+                </StackPanel>
+
+                <StackPanel Margin="0,0,12,10">
+                    <TextBlock Text="Course" Margin="0,0,0,4" FontWeight="SemiBold"/>
+                    <ComboBox x:Name="cboCourse"
+                              Width="220"
+                              Height="32"
+                              DisplayMemberPath="DisplayName"
+                              SelectedValuePath="Id"/>
+                </StackPanel>
+
+                <StackPanel Margin="0,0,12,10">
+                    <TextBlock Text="Class" Margin="0,0,0,4" FontWeight="SemiBold"/>
+                    <ComboBox x:Name="cboClass"
+                              Width="180"
+                              Height="32"
+                              DisplayMemberPath="DisplayName"
+                              SelectedValuePath="Id"/>
+                </StackPanel>
+
+                <StackPanel Margin="0,0,12,10">
+                    <TextBlock Text="Slot" Margin="0,0,0,4" FontWeight="SemiBold"/>
+                    <ComboBox x:Name="cboSlot"
+                              Width="180"
+                              Height="32"
+                              DisplayMemberPath="DisplayName"
+                              SelectedValuePath="Id"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom" Margin="0,22,0,10">
+                    <Button x:Name="btnApplyFilter"
+                            Content="Apply"
+                            Width="86"
+                            Height="32"
+                            Margin="0,0,8,0"
+                            Click="btnApplyFilter_Click"/>
+
+                    <Button x:Name="btnResetFilter"
+                            Content="Reset"
+                            Width="86"
+                            Height="32"
+                            Click="btnResetFilter_Click"/>
+                </StackPanel>
+            </WrapPanel>
+        </Border>
+
+        <Grid Grid.Row="2" Margin="0,14,0,16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
@@ -69,14 +139,13 @@
             </StackPanel>
         </Grid>
 
-        <!-- Schedule grid -->
-        <Border Grid.Row="2"
+        <Border Grid.Row="3"
                 Background="White"
                 BorderBrush="#BFBFBF"
                 BorderThickness="1">
             <ScrollViewer VerticalScrollBarVisibility="Auto"
-                  HorizontalScrollBarVisibility="Auto"
-                  CanContentScroll="True">
+                          HorizontalScrollBarVisibility="Auto"
+                          CanContentScroll="True">
                 <Grid x:Name="ScheduleGrid" Margin="0"/>
             </ScrollViewer>
         </Border>
