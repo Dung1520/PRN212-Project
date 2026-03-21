@@ -5,72 +5,193 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfApp.View"
         mc:Ignorable="d"
-        Title="StudentEnrollmentWindow" Height="450" Width="800">
+        Title="Student Enrollment" Height="450" Width="800"
+        Background="#F0F4F8">
     <Grid>
-        <DataGrid x:Name="dgEnrollments" AutoGenerateColumns="False">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#1E3A5F" Padding="16,12">
+            <TextBlock Text="📋 Student Enrollment"
+                       Foreground="White"
+                       FontSize="18"
+                       FontWeight="SemiBold"
+                       FontFamily="Segoe UI"/>
+        </Border>
+
+        <!-- DataGrid chiếm toàn bộ phần còn lại -->
+        <DataGrid x:Name="dgEnrollments"
+                  Grid.Row="1"
+                  AutoGenerateColumns="False"
+                  HorizontalAlignment="Stretch"
+                  VerticalAlignment="Stretch"
+                  Background="White"
+                  BorderThickness="0"
+                  RowBackground="White"
+                  AlternatingRowBackground="#F7FAFC"
+                  GridLinesVisibility="Horizontal"
+                  HorizontalGridLinesBrush="#E2E8F0"
+                  ColumnHeaderHeight="42"
+                  RowHeight="40"
+                  SelectionMode="Single"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  IsReadOnly="True">
+
+            <!-- Header style -->
+            <DataGrid.ColumnHeaderStyle>
+                <Style TargetType="DataGridColumnHeader">
+                    <Setter Property="Background" Value="#EDF2F7"/>
+                    <Setter Property="Foreground" Value="#2D3748"/>
+                    <Setter Property="FontWeight" Value="SemiBold"/>
+                    <Setter Property="FontFamily" Value="Segoe UI"/>
+                    <Setter Property="FontSize" Value="13"/>
+                    <Setter Property="Padding" Value="12,0"/>
+                    <Setter Property="BorderBrush" Value="#CBD5E0"/>
+                    <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                </Style>
+            </DataGrid.ColumnHeaderStyle>
+
+            <!-- Row style -->
+            <DataGrid.RowStyle>
+                <Style TargetType="DataGridRow">
+                    <Setter Property="FontFamily" Value="Segoe UI"/>
+                    <Setter Property="FontSize" Value="13"/>
+                    <Style.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Background" Value="#BEE3F8"/>
+                            <Setter Property="Foreground" Value="#1A202C"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="#E9F5FF"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.RowStyle>
+
+            <!-- Cell style -->
+            <DataGrid.CellStyle>
+                <Style TargetType="DataGridCell">
+                    <Setter Property="Padding" Value="12,0"/>
+                    <Setter Property="BorderThickness" Value="0"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="DataGridCell">
+                                <Border Padding="{TemplateBinding Padding}"
+                                        Background="{TemplateBinding Background}">
+                                    <ContentPresenter VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </DataGrid.CellStyle>
 
             <DataGrid.Columns>
 
-                <DataGridTextColumn Header="Course" Binding="{Binding CourseName}" />
-                <DataGridTextColumn Header="Class" Binding="{Binding ClassCode}" />
-                <DataGridTextColumn Header="Start" Binding="{Binding StartDate, StringFormat=dd/MM/yyyy}" />
-                <DataGridTextColumn Header="End" Binding="{Binding EndDate, StringFormat=dd/MM/yyyy}" />
-                <DataGridTextColumn Header="Day" Binding="{Binding DayOfWeek}" />
-                <DataGridTextColumn Header="Slot" Binding="{Binding Slot}" />
+                <!-- Course: co giãn theo cửa sổ -->
+                <DataGridTextColumn Header="Course"
+                                    Binding="{Binding CourseName}"
+                                    Width="*"
+                                    MinWidth="150"/>
 
-                <!-- ✅ Status có màu -->
-                <DataGridTextColumn Header="Status" Binding="{Binding Status}">
+                <DataGridTextColumn Header="Class"
+                                    Binding="{Binding ClassCode}"
+                                    Width="100"/>
+
+                <DataGridTextColumn Header="Start"
+                                    Binding="{Binding StartDate, StringFormat=dd/MM/yyyy}"
+                                    Width="105"/>
+
+                <DataGridTextColumn Header="End"
+                                    Binding="{Binding EndDate, StringFormat=dd/MM/yyyy}"
+                                    Width="105"/>
+
+                <!-- Day: vừa đủ "Tuesday, Thursday" -->
+                <DataGridTextColumn Header="Day"
+                                    Binding="{Binding DayOfWeek}"
+                                    Width="160"/>
+
+                <!-- Slot: đủ cho "Slot 2 (09:00:00 - 11:00)" -->
+                <DataGridTextColumn Header="Slot"
+                                    Binding="{Binding Slot}"
+                                    Width="185"/>
+
+                <!-- Status có màu -->
+                <DataGridTextColumn Header="Status"
+                                    Binding="{Binding Status}"
+                                    Width="80">
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">
+                            <Setter Property="FontWeight" Value="SemiBold"/>
                             <Style.Triggers>
-
                                 <DataTrigger Binding="{Binding Status}" Value="Pending">
-                                    <Setter Property="Foreground" Value="Orange"/>
+                                    <Setter Property="Foreground" Value="#D97706"/>
                                 </DataTrigger>
-
                                 <DataTrigger Binding="{Binding Status}" Value="Approved">
-                                    <Setter Property="Foreground" Value="Green"/>
+                                    <Setter Property="Foreground" Value="#16A34A"/>
                                 </DataTrigger>
-
                                 <DataTrigger Binding="{Binding Status}" Value="Cancel">
-                                    <Setter Property="Foreground" Value="Red"/>
+                                    <Setter Property="Foreground" Value="#DC2626"/>
                                 </DataTrigger>
-
                             </Style.Triggers>
                         </Style>
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
 
                 <!-- Button Cancel -->
-                <DataGridTemplateColumn Header="Action">
+                <DataGridTemplateColumn Header="Action" Width="90">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-
                             <Button Content="Cancel"
-                            Click="BtnCancel_Click">
-
+                                    Click="BtnCancel_Click"
+                                    Cursor="Hand">
                                 <Button.Style>
                                     <Style TargetType="Button">
-
-                                        <Setter Property="Visibility" Value="Collapsed"/>
-
+                                        <Setter Property="Visibility"      Value="Collapsed"/>
+                                        <Setter Property="Background"      Value="#FEE2E2"/>
+                                        <Setter Property="Foreground"      Value="#DC2626"/>
+                                        <Setter Property="BorderBrush"     Value="#FECACA"/>
+                                        <Setter Property="BorderThickness" Value="1"/>
+                                        <Setter Property="Padding"         Value="10,4"/>
+                                        <Setter Property="FontSize"        Value="12"/>
+                                        <Setter Property="FontFamily"      Value="Segoe UI"/>
+                                        <Setter Property="FontWeight"      Value="SemiBold"/>
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border Background="{TemplateBinding Background}"
+                                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                                            CornerRadius="4"
+                                                            Padding="{TemplateBinding Padding}">
+                                                        <ContentPresenter HorizontalAlignment="Center"
+                                                                          VerticalAlignment="Center"/>
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="Background" Value="#FCA5A5"/>
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding Status}" Value="Pending">
                                                 <Setter Property="Visibility" Value="Visible"/>
                                             </DataTrigger>
                                         </Style.Triggers>
-
                                     </Style>
                                 </Button.Style>
-
                             </Button>
-
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
             </DataGrid.Columns>
-
         </DataGrid>
     </Grid>
 </Window>
