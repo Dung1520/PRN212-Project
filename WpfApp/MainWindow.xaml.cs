@@ -8,16 +8,20 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using WpfApp.View;
 
-namespace WpfApp;
-
-/// <summary>
-/// Interaction logic for MainWindow.xaml
-/// </summary>
-public partial class MainWindow : Window
+namespace WpfApp
 {
-    public MainWindow()
+    public partial class MainWindow : Window
     {
-        InitializeComponent();
+        public MainWindow()
+        {
+            InitializeComponent();
+
+            StudentCourseWindow window = new StudentCourseWindow();
+          //  StudentEnrollmentWindow window = new StudentEnrollmentWindow();
+            window.Show();
+            this.Close();
+        }
     }
 }
