@@ -389,7 +389,7 @@ namespace DataAccess
                     .HasConstraintName("FK_Enrollment_Class");
 
                 entity.HasCheckConstraint("CK_Enrollment_Status",
-                    "[Status] IN (N'Pending', N'Approved', N'Rejected', N'Rejected')");
+                    "[Status] IN (N'Pending', N'Approved', N'Rejected', N'Cancel')");
             });
         }
 

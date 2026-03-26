@@ -173,14 +173,11 @@ namespace Repositories
             if (enrollment == null)
                 throw new Exception("Không tìm thấy đăng ký!");
 
-            if (enrollment.Status == "Approved")
-                throw new Exception("Không thể hủy lớp đã được duyệt!");
+            if (enrollment.Status != "Pending")
+                throw new Exception("Chỉ được hủy khi đang Pending!");
 
-            if (enrollment.Status == "Pending")
-            {
-                enrollment.Status = "Rejected"; // hoặc "Cancel"
-                context.SaveChanges();
-            }
+            enrollment.Status = "Cancel";
+            context.SaveChanges();
         }
 
 

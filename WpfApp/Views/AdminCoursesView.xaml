@@ -1,0 +1,87 @@
+﻿<UserControl x:Class="WpfApp.Views.AdminCoursesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2.2*"/>
+            <ColumnDefinition Width="1.15*"/>
+        </Grid.ColumnDefinitions>
+
+        <DockPanel Grid.Column="0" Margin="0,0,18,0">
+            <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,12">
+                <TextBox x:Name="SearchTextBox" Width="260" Height="34" VerticalContentAlignment="Center"/>
+                <Button Width="100" Margin="8,0,0,0" Content="Tìm" Click="SearchButton_Click"/>
+                <Button Width="120" Margin="8,0,0,0" Content="Làm mới" Click="ReloadButton_Click"/>
+                <Button Width="100" Margin="8,0,0,0" Content="Add" Click="AddButton_Click"/>
+            </StackPanel>
+
+            <TextBlock DockPanel.Dock="Top" Text="Danh sách khóa học" FontSize="24" FontWeight="Bold" Margin="0,0,0,12"/>
+
+            <DataGrid x:Name="CourseGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="50"/>
+                    <DataGridTextColumn Header="Code" Binding="{Binding CourseCode}" Width="110"/>
+                    <DataGridTextColumn Header="Tên khóa học" Binding="{Binding Name}" Width="180"/>
+                    <DataGridTextColumn Header="Chủ đề" Binding="{Binding SubjectCourse}" Width="120"/>
+                    <DataGridTextColumn Header="Số tuần" Binding="{Binding DurationWeeks}" Width="80"/>
+                    <DataGridTextColumn Header="Học phí" Binding="{Binding Fee, StringFormat='{}{0:0,0}'}" Width="110"/>
+                    <DataGridTextColumn Header="Trạng thái" Binding="{Binding Status}" Width="90"/>
+                    <DataGridTemplateColumn Header="Edit" Width="80">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="Edit" Click="EditButton_Click" Tag="{Binding Id}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </DockPanel>
+
+        <Border Grid.Column="1" Background="#F8FAFC" Padding="16" CornerRadius="12">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <TextBlock x:Name="ModeText" Text="Chưa chọn thao tác" FontSize="14" FontWeight="SemiBold" Foreground="#1D4ED8" Margin="0,0,0,8"/>
+                    <TextBlock Text="Form khóa học" FontSize="22" FontWeight="Bold" Margin="0,0,0,14"/>
+
+                    <StackPanel x:Name="ActionHintPanel">
+                        <TextBlock Text="Bấm Add để thêm khóa học mới hoặc bấm Edit ở bảng bên trái để sửa." TextWrapping="Wrap" Foreground="#475569"/>
+                    </StackPanel>
+
+                    <StackPanel x:Name="FormPanel" Visibility="Collapsed">
+                        <TextBlock Text="Course Code"/>
+                        <TextBox x:Name="CourseCodeTextBox" Margin="0,6,0,10"/>
+
+                        <TextBlock Text="Tên khóa học"/>
+                        <TextBox x:Name="NameTextBox" Margin="0,6,0,10"/>
+
+                        <TextBlock Text="Mô tả"/>
+                        <TextBox x:Name="DescriptionTextBox" Margin="0,6,0,10" Height="76" AcceptsReturn="True" TextWrapping="Wrap"/>
+
+                        <TextBlock Text="Chủ đề"/>
+                        <TextBox x:Name="SubjectTextBox" Margin="0,6,0,10"/>
+
+                        <TextBlock Text="Số tuần"/>
+                        <TextBox x:Name="DurationTextBox" Margin="0,6,0,10"/>
+
+                        <TextBlock Text="Học phí"/>
+                        <TextBox x:Name="FeeTextBox" Margin="0,6,0,10"/>
+
+                        <TextBlock Text="Trạng thái"/>
+                        <ComboBox x:Name="StatusComboBox" Margin="0,6,0,16">
+                            <ComboBoxItem Content="Open" IsSelected="True"/>
+                            <ComboBoxItem Content="Closed"/>
+                        </ComboBox>
+
+                        <WrapPanel>
+                            <Button Width="120" Margin="0,0,8,8" Content="Lưu" Click="SaveButton_Click"/>
+                            <Button Width="100" Margin="0,0,8,8" Content="Back" Click="BackButton_Click"/>
+                            <Button Width="100" Margin="0,0,8,8" Content="Clear" Click="ClearButton_Click"/>
+                        </WrapPanel>
+                    </StackPanel>
+
+                    <TextBlock x:Name="MessageText" Margin="0,10,0,0" Foreground="Crimson" TextWrapping="Wrap"/>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+    </Grid>
+</UserControl>

@@ -15,14 +15,14 @@ namespace DataAccess
                 .Build();
         }
 
-        public static LctmsDbContext CreateDbContext()
-        {
-            var optionsBuilder = new DbContextOptionsBuilder<LctmsDbContext>();
-            var connectionString = _configuration.GetConnectionString("DefaultConnection");
+            public static LctmsDbContext CreateDbContext()
+            {
+                var optionsBuilder = new DbContextOptionsBuilder<LctmsDbContext>();
+                var connectionString = AppSettingsHelper.GetConnectionString();
 
-            optionsBuilder.UseSqlServer(connectionString);
+                optionsBuilder.UseSqlServer(connectionString);
 
-            return new LctmsDbContext(optionsBuilder.Options);
+                return new LctmsDbContext(optionsBuilder.Options);
+            }
         }
     }
-}

@@ -1,0 +1,36 @@
+﻿<UserControl x:Class="WpfApp.Views.AdminPeopleView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <TabControl>
+        <TabItem Header="Students">
+            <DockPanel Margin="10">
+                <TextBox x:Name="StudentKeywordTextBox" DockPanel.Dock="Top" Height="34" Margin="0,0,0,10"/>
+                <Button DockPanel.Dock="Top" Width="100" Margin="0,0,0,10" Content="Tìm student" Click="SearchStudents_Click"/>
+                <DataGrid x:Name="StudentGrid" AutoGenerateColumns="False" IsReadOnly="True">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Code" Binding="{Binding StudentCode}" Width="120"/>
+                        <DataGridTextColumn Header="Full Name" Binding="{Binding FullName}" Width="180"/>
+                        <DataGridTextColumn Header="Email" Binding="{Binding Email}" Width="180"/>
+                        <DataGridTextColumn Header="Phone" Binding="{Binding PhoneNumber}" Width="130"/>
+                        <DataGridTextColumn Header="Gender" Binding="{Binding Gender}" Width="80"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+        </TabItem>
+        <TabItem Header="Teachers">
+            <DockPanel Margin="10">
+                <TextBox x:Name="TeacherKeywordTextBox" DockPanel.Dock="Top" Height="34" Margin="0,0,0,10"/>
+                <Button DockPanel.Dock="Top" Width="100" Margin="0,0,0,10" Content="Tìm teacher" Click="SearchTeachers_Click"/>
+                <DataGrid x:Name="TeacherGrid" AutoGenerateColumns="False" IsReadOnly="True">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Code" Binding="{Binding TeacherCode}" Width="120"/>
+                        <DataGridTextColumn Header="Full Name" Binding="{Binding FullName}" Width="180"/>
+                        <DataGridTextColumn Header="Email" Binding="{Binding Email}" Width="180"/>
+                        <DataGridTextColumn Header="Phone" Binding="{Binding PhoneNumber}" Width="130"/>
+                        <DataGridTextColumn Header="Gender" Binding="{Binding Gender}" Width="80"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+        </TabItem>
+    </TabControl>
+</UserControl>

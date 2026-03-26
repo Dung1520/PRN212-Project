@@ -1,11 +1,7 @@
 ﻿using BusinessObjects;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Repositories;
-
+using System;
+using System.Linq;
 
 namespace Services
 {
@@ -20,61 +16,64 @@ namespace Services
 
         public void AddCourse(Course course)
         {
-            // 🔥 Validate
-            if (string.IsNullOrWhiteSpace(course.CourseCode))
-                throw new Exception("CourseCode is required");
-
-            if (string.IsNullOrWhiteSpace(course.Name))
-                throw new Exception("Course Name is required");
-
-            if (course.DurationWeeks <= 0)
-                throw new Exception("DurationWeeks must be > 0");
-
-            if (course.Fee < 0)
-                throw new Exception("Fee must be >= 0");
-
-            // Auto set
+            ValidateCourse(course, isUpdate: false);
             course.CreatedAt = DateTime.Now;
-            course.Status = string.IsNullOrEmpty(course.Status) ? "Open" : course.Status;
-
+            course.Status = string.IsNullOrWhiteSpace(course.Status) ? "Open" : course.Status.Trim();
             _repo.AddCourse(course);
         }
 
-        public List<Course> GetAllCourses()
-        {
-            return _repo.GetAllCourses();
-        }
+        public List<Course> GetAllCourses() => _repo.GetAllCourses();
 
-        public Course? GetCourseById(int id)
-        {
-            return _repo.GetCourseById(id);
-        }
+        public Course? GetCourseById(int id) => _repo.GetCourseById(id);
 
         public void UpdateCourse(Course course)
         {
             var existing = _repo.GetCourseById(course.Id);
             if (existing == null)
-                throw new Exception("Course not found");
+                throw new Exception("Không tìm thấy khóa học.");
 
-            if (course.DurationWeeks <= 0)
-                throw new Exception("DurationWeeks must be > 0");
-
-            if (course.Fee < 0)
-                throw new Exception("Fee must be >= 0");
-
-            // ❗ Không update CreatedAt
+            ValidateCourse(course, isUpdate: true);
             course.CreatedAt = existing.CreatedAt;
-
             _repo.UpdateCourse(course);
         }
 
         public void DeleteCourse(int id)
         {
-            var existing = _repo.GetCourseById(id);
-            if (existing == null)
-                throw new Exception("Course not found");
+            throw new Exception("Theo yêu cầu hiện tại, module Course không dùng chức năng Delete.");
+        }
 
-            _repo.DeleteCourse(id);
+        private void ValidateCourse(Course course, bool isUpdate)
+        {
+            if (course == null)
+                throw new Exception("Dữ liệu khóa học không hợp lệ.");
+
+            course.CourseCode = course.CourseCode?.Trim() ?? string.Empty;
+            course.Name = course.Name?.Trim() ?? string.Empty;
+            course.Description = course.Description?.Trim();
+            course.SubjectCourse = course.SubjectCourse?.Trim();
+            course.Status = string.IsNullOrWhiteSpace(course.Status) ? "Open" : course.Status.Trim();
+
+            if (string.IsNullOrWhiteSpace(course.CourseCode))
+                throw new Exception("Course code không được để trống.");
+
+            if (string.IsNullOrWhiteSpace(course.Name))
+                throw new Exception("Tên khóa học không được để trống.");
+
+            if (course.DurationWeeks <= 0)
+                throw new Exception("Số tuần phải lớn hơn 0.");
+
+            if (course.Fee < 0)
+                throw new Exception("Học phí phải lớn hơn hoặc bằng 0.");
+
+            if (course.Status != "Open" && course.Status != "Closed")
+                throw new Exception("Trạng thái khóa học chỉ được là Open hoặc Closed.");
+
+            bool duplicateCode = _repo.GetAllCourses().Any(x =>
+                x.CourseCode.Equals(course.CourseCode, StringComparison.OrdinalIgnoreCase)
+                && (!isUpdate || x.Id != course.Id));
+
+            if (duplicateCode)
+                throw new Exception("Course code đã tồn tại.");
         }
     }
 }

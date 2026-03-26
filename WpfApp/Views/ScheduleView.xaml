@@ -1,0 +1,58 @@
+﻿<UserControl x:Class="WpfApp.Views.ScheduleView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Background="#F8FAFC" Padding="12" CornerRadius="12" Margin="0,0,0,12">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <Button Width="120" Content="Tuần trước" Click="PrevWeek_Click"/>
+                    <Button Width="120" Margin="8,0,0,0" Content="Tuần sau" Click="NextWeek_Click"/>
+                    <TextBlock x:Name="WeekText" VerticalAlignment="Center" Margin="16,0,0,0" FontSize="18" FontWeight="Bold"/>
+                </StackPanel>
+
+                <WrapPanel>
+                    <TextBox x:Name="KeywordTextBox" Width="220" Height="34" Margin="0,0,8,8" VerticalContentAlignment="Center"/>
+                    <ComboBox x:Name="TeacherFilterComboBox" Width="180" Margin="0,0,8,8" DisplayMemberPath="DisplayName" SelectedValuePath="Id"/>
+                    <ComboBox x:Name="CourseFilterComboBox" Width="180" Margin="0,0,8,8" DisplayMemberPath="DisplayName" SelectedValuePath="Id"/>
+                    <ComboBox x:Name="ClassFilterComboBox" Width="180" Margin="0,0,8,8" DisplayMemberPath="DisplayName" SelectedValuePath="Id"/>
+                    <ComboBox x:Name="SlotFilterComboBox" Width="150" Margin="0,0,8,8" DisplayMemberPath="DisplayName" SelectedValuePath="Id"/>
+                    <Button Width="100" Margin="0,0,8,8" Content="Lọc" Click="FilterButton_Click"/>
+                    <Button Width="100" Margin="0,0,8,8" Content="Xóa lọc" Click="ClearFilterButton_Click"/>
+                </WrapPanel>
+            </StackPanel>
+        </Border>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2.2*"/>
+                <ColumnDefinition Width="1.1*"/>
+            </Grid.ColumnDefinitions>
+
+            <ScrollViewer Grid.Column="0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Margin="0,0,12,0">
+                <Grid x:Name="ScheduleGrid"/>
+            </ScrollViewer>
+
+            <Border Grid.Column="1" Background="#F8FAFC" Padding="16" CornerRadius="12">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock Text="Chi tiết lịch" FontSize="22" FontWeight="Bold" Margin="0,0,0,12"/>
+                        <TextBlock x:Name="DetailTitleText" FontSize="16" FontWeight="SemiBold" Text="Chọn một ô lịch để xem chi tiết" Margin="0,0,0,10"/>
+                        <TextBlock x:Name="DetailCourseText" Margin="0,0,0,6" TextWrapping="Wrap"/>
+                        <TextBlock x:Name="DetailTeacherText" Margin="0,0,0,6" TextWrapping="Wrap"/>
+                        <TextBlock x:Name="DetailRoomText" Margin="0,0,0,6" TextWrapping="Wrap"/>
+                        <TextBlock x:Name="DetailSlotText" Margin="0,0,0,6" TextWrapping="Wrap"/>
+                        <TextBlock x:Name="DetailDateText" Margin="0,0,0,6" TextWrapping="Wrap"/>
+                        <TextBlock x:Name="DetailCapacityStatusText" Margin="0,0,0,10" TextWrapping="Wrap"/>
+                        <TextBlock Text="Danh sách học viên" FontWeight="Bold" Margin="0,10,0,6"/>
+                        <ListBox x:Name="StudentListBox" Height="260"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

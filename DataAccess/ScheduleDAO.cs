@@ -19,9 +19,6 @@ namespace DataAccess
             _context = context;
         }
 
-        // =========================
-        // WEEKLY SCHEDULE
-        // =========================
         public ScheduleWeekViewModel GetAdminWeeklySchedule(DateTime anyDateInWeek, ScheduleFilterViewModel? filter = null)
         {
             return BuildWeeklySchedule(anyDateInWeek, null, null, filter);
@@ -39,14 +36,12 @@ namespace DataAccess
 
         public ScheduleFilterOptionsViewModel GetAdminScheduleFilterOptions(DateTime anyDateInWeek)
         {
-            var rows = BuildFilterSourceRows(null);
-            return BuildFilterOptions(rows, includeTeacher: true);
+            return BuildScheduleFilterOptions(anyDateInWeek, null);
         }
 
         public ScheduleFilterOptionsViewModel GetTeacherScheduleFilterOptions(int teacherId, DateTime anyDateInWeek)
         {
-            var rows = BuildFilterSourceRows(teacherId);
-            return BuildFilterOptions(rows, includeTeacher: false);
+            return BuildScheduleFilterOptions(anyDateInWeek, teacherId);
         }
 
         public AdminScheduleDetailViewModel? GetAdminScheduleDetail(int classId, int dayOfWeek, int slotId)
@@ -68,7 +63,7 @@ namespace DataAccess
                      CourseCode = c.CourseCode,
                      CourseName = c.Name,
                      TeacherName = t != null ? t.FullName : "N/A",
-                     RoomName = sc.RoomName ?? "",
+                     RoomName = sc.RoomName ?? string.Empty,
                      SlotName = sl.SlotName,
                      StartTime = sl.StartTime,
                      EndTime = sl.EndTime,
@@ -78,10 +73,7 @@ namespace DataAccess
                      Status = cl.Status
                  }).FirstOrDefault();
 
-            if (detail == null)
-            {
-                return null;
-            }
+            if (detail == null) return null;
 
             detail.StudentNames =
                 (from e in _context.Enrollments
@@ -108,19 +100,19 @@ namespace DataAccess
                  {
                      ClassId = cl.Id,
                      ClassCode = cl.ClassCode,
+                     CourseCode = c.CourseCode,
                      CourseName = c.Name,
-                     RoomName = sc.RoomName ?? "",
+                     RoomName = sc.RoomName ?? string.Empty,
                      SlotName = sl.SlotName,
                      StartTime = sl.StartTime,
                      EndTime = sl.EndTime,
                      StartDate = cl.StartDate,
-                     EndDate = cl.EndDate
+                     EndDate = cl.EndDate,
+                     Capacity = cl.Capacity,
+                     Status = cl.Status
                  }).FirstOrDefault();
 
-            if (detail == null)
-            {
-                return null;
-            }
+            if (detail == null) return null;
 
             detail.StudentNames =
                 (from e in _context.Enrollments
@@ -134,7 +126,7 @@ namespace DataAccess
 
         public StudentScheduleDetailViewModel? GetStudentScheduleDetail(int studentId, int classId, int dayOfWeek, int slotId)
         {
-            return
+            var detail =
                 (from e in _context.Enrollments
                  join cl in _context.Classes on e.ClassId equals cl.Id
                  join c in _context.Courses on cl.CourseId equals c.Id
@@ -151,16 +143,31 @@ namespace DataAccess
                  {
                      ClassId = cl.Id,
                      ClassCode = cl.ClassCode,
+                     CourseCode = c.CourseCode,
                      CourseName = c.Name,
                      TeacherName = t != null ? t.FullName : "N/A",
-                     RoomName = sc.RoomName ?? "",
+                     RoomName = sc.RoomName ?? string.Empty,
                      SlotName = sl.SlotName,
                      StartTime = sl.StartTime,
                      EndTime = sl.EndTime,
                      StartDate = cl.StartDate,
-                     EndDate = cl.EndDate
+                     EndDate = cl.EndDate,
+                     Capacity = cl.Capacity,
+                     Status = cl.Status
                  }).FirstOrDefault();
+
+            if (detail == null) return null;
+
+            detail.StudentNames =
+                (from er in _context.Enrollments
+                 join s in _context.Students on er.StudentId equals s.Id
+                 where er.ClassId == classId && er.Status == "Approved"
+                 orderby s.FullName
+                 select s.FullName).ToList();
+
+            return detail;
         }
+
 
         private ScheduleWeekViewModel BuildWeeklySchedule(
             DateTime anyDateInWeek,
@@ -171,19 +178,54 @@ namespace DataAccess
             var weekStart = GetWeekStart(anyDateInWeek);
             var weekEnd = weekStart.AddDays(6);
 
-            var rawSchedules = BuildBaseScheduleRows(anyDateInWeek, teacherId, studentId);
-            rawSchedules = ApplyFilter(rawSchedules, filter);
-
             var slots = _context.Slots
                 .OrderBy(x => x.StartTime)
                 .ToList();
 
-            if (filter?.SlotId.HasValue == true)
+            var rawSchedules =
+                (from sc in _context.Schedules
+                 join cl in _context.Classes on sc.ClassId equals cl.Id
+                 join c in _context.Courses on cl.CourseId equals c.Id
+                 join sl in _context.Slots on sc.SlotId equals sl.Id
+                 join t in _context.Teachers on cl.TeacherId equals t.Id into teacherJoin
+                 from t in teacherJoin.DefaultIfEmpty()
+                 where cl.StartDate <= weekEnd && cl.EndDate >= weekStart
+                 select new ScheduleCellViewModel
+                 {
+                     DayOfWeek = sc.DayOfWeek,
+                     SlotId = sc.SlotId,
+                     SlotName = sl.SlotName,
+                     ClassId = cl.Id,
+                     CourseId = cl.CourseId,
+                     TeacherId = cl.TeacherId,
+                     ClassCode = cl.ClassCode,
+                     CourseName = c.Name,
+                     TeacherName = t != null ? t.FullName : "N/A",
+                     RoomName = sc.RoomName ?? string.Empty,
+                     StartTime = sl.StartTime,
+                     EndTime = sl.EndTime
+                 }).ToList();
+
+            if (teacherId.HasValue)
             {
-                slots = slots
-                    .Where(x => x.Id == filter.SlotId.Value)
+                rawSchedules = rawSchedules
+                    .Where(x => x.TeacherId == teacherId.Value)
                     .ToList();
             }
+
+            if (studentId.HasValue)
+            {
+                var approvedClassIds = _context.Enrollments
+                    .Where(e => e.StudentId == studentId.Value && e.Status == "Approved")
+                    .Select(e => e.ClassId)
+                    .ToHashSet();
+
+                rawSchedules = rawSchedules
+                    .Where(x => x.ClassId.HasValue && approvedClassIds.Contains(x.ClassId.Value))
+                    .ToList();
+            }
+
+            rawSchedules = ApplyFilter(rawSchedules, filter);
 
             var fullCells = new List<ScheduleCellViewModel>();
 
@@ -193,32 +235,15 @@ namespace DataAccess
                 {
                     var actualDate = weekStart.AddDays(day - 1);
 
-                    var existings = rawSchedules
+                    var existingCells = rawSchedules
                         .Where(x =>
                             x.SlotId == slot.Id &&
-                            x.DayOfWeek == day &&
-                            actualDate.Date >= x.ClassStartDate.Date &&
-                            actualDate.Date <= x.ClassEndDate.Date)
+                            x.DayOfWeek == day)
                         .ToList();
 
-                    if (existings.Any())
+                    if (existingCells.Any())
                     {
-                        foreach (var existing in existings)
-                        {
-                            fullCells.Add(new ScheduleCellViewModel
-                            {
-                                DayOfWeek = day,
-                                SlotId = existing.SlotId,
-                                SlotName = existing.SlotName,
-                                ClassId = existing.ClassId,
-                                ClassCode = existing.ClassCode,
-                                CourseName = existing.CourseName,
-                                TeacherName = existing.TeacherName,
-                                RoomName = existing.RoomName ?? "",
-                                StartTime = existing.StartTime,
-                                EndTime = existing.EndTime
-                            });
-                        }
+                        fullCells.AddRange(existingCells);
                     }
                     else
                     {
@@ -241,264 +266,136 @@ namespace DataAccess
                 Cells = fullCells
             };
         }
-        private List<ScheduleRow> BuildBaseScheduleRows(DateTime anyDateInWeek, int? teacherId, int? studentId)
-        {
-            var weekStart = GetWeekStart(anyDateInWeek);
-            var weekEnd = weekStart.AddDays(6);
 
-            var rawSchedules =
-                (from sc in _context.Schedules
-                 join cl in _context.Classes on sc.ClassId equals cl.Id
-                 join c in _context.Courses on cl.CourseId equals c.Id
-                 join sl in _context.Slots on sc.SlotId equals sl.Id
-                 join t in _context.Teachers on cl.TeacherId equals t.Id into teacherJoin
-                 from t in teacherJoin.DefaultIfEmpty()
-                 where cl.StartDate <= weekEnd && cl.EndDate >= weekStart
-                 select new ScheduleRow
-                 {
-                     DayOfWeek = (int)sc.DayOfWeek,
-                     SlotId = sc.SlotId,
-                     SlotName = sl.SlotName,
-                     StartTime = sl.StartTime,
-                     EndTime = sl.EndTime,
-
-                     ClassId = cl.Id,
-                     ClassCode = cl.ClassCode,
-
-                     CourseId = c.Id,
-                     CourseCode = c.CourseCode,
-                     CourseName = c.Name,
-
-                     TeacherId = cl.TeacherId,
-                     TeacherName = t != null ? t.FullName : "N/A",
-
-                     RoomName = sc.RoomName,
-
-                     ClassStartDate = cl.StartDate,
-                     ClassEndDate = cl.EndDate
-                 }).ToList();
-
-            if (teacherId.HasValue)
-            {
-                rawSchedules = rawSchedules
-                    .Where(x => x.TeacherId == teacherId.Value)
-                    .ToList();
-            }
-
-            if (studentId.HasValue)
-            {
-                var approvedClassIds = _context.Enrollments
-                    .Where(e => e.StudentId == studentId.Value && e.Status == "Approved")
-                    .Select(e => e.ClassId)
-                    .ToHashSet();
-
-                rawSchedules = rawSchedules
-                    .Where(x => approvedClassIds.Contains(x.ClassId))
-                    .ToList();
-            }
-
-            return rawSchedules;
-        }
-        private List<ScheduleRow> BuildFilterSourceRows(int? teacherId)
-        {
-            var rows =
-                (from sc in _context.Schedules
-                 join cl in _context.Classes on sc.ClassId equals cl.Id
-                 join c in _context.Courses on cl.CourseId equals c.Id
-                 join sl in _context.Slots on sc.SlotId equals sl.Id
-                 join t in _context.Teachers on cl.TeacherId equals t.Id into teacherJoin
-                 from t in teacherJoin.DefaultIfEmpty()
-                 select new ScheduleRow
-                 {
-                     DayOfWeek = (int)sc.DayOfWeek,
-                     SlotId = sc.SlotId,
-                     SlotName = sl.SlotName,
-                     StartTime = sl.StartTime,
-                     EndTime = sl.EndTime,
-
-                     ClassId = cl.Id,
-                     ClassCode = cl.ClassCode,
-
-                     CourseId = c.Id,
-                     CourseCode = c.CourseCode,
-                     CourseName = c.Name,
-
-                     TeacherId = cl.TeacherId,
-                     TeacherName = t != null ? t.FullName : "N/A",
-
-                     RoomName = sc.RoomName,
-
-                     ClassStartDate = cl.StartDate,
-                     ClassEndDate = cl.EndDate
-                 }).ToList();
-
-            if (teacherId.HasValue)
-            {
-                rows = rows
-                    .Where(x => x.TeacherId == teacherId.Value)
-                    .ToList();
-            }
-
-            return rows;
-        }
-        private List<ScheduleRow> ApplyFilter(List<ScheduleRow> rows, ScheduleFilterViewModel? filter)
+        private List<ScheduleCellViewModel> ApplyFilter(
+            List<ScheduleCellViewModel> source,
+            ScheduleFilterViewModel? filter)
         {
             if (filter == null)
             {
-                return rows;
+                return source;
+            }
+
+            IEnumerable<ScheduleCellViewModel> query = source;
+
+            if (!string.IsNullOrWhiteSpace(filter.Keyword))
+            {
+                string keyword = filter.Keyword.Trim();
+                query = query.Where(x =>
+                    (!string.IsNullOrWhiteSpace(x.ClassCode) && x.ClassCode.Contains(keyword, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrWhiteSpace(x.CourseName) && x.CourseName.Contains(keyword, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrWhiteSpace(x.TeacherName) && x.TeacherName.Contains(keyword, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrWhiteSpace(x.RoomName) && x.RoomName.Contains(keyword, StringComparison.OrdinalIgnoreCase)));
             }
 
             if (filter.TeacherId.HasValue)
             {
-                rows = rows
-                    .Where(x => x.TeacherId == filter.TeacherId.Value)
-                    .ToList();
+                query = query.Where(x => x.TeacherId == filter.TeacherId.Value);
             }
 
             if (filter.CourseId.HasValue)
             {
-                rows = rows
-                    .Where(x => x.CourseId == filter.CourseId.Value)
-                    .ToList();
+                query = query.Where(x => x.CourseId == filter.CourseId.Value);
             }
 
             if (filter.ClassId.HasValue)
             {
-                rows = rows
-                    .Where(x => x.ClassId == filter.ClassId.Value)
-                    .ToList();
+                query = query.Where(x => x.ClassId == filter.ClassId.Value);
             }
 
             if (filter.SlotId.HasValue)
             {
-                rows = rows
-                    .Where(x => x.SlotId == filter.SlotId.Value)
-                    .ToList();
+                query = query.Where(x => x.SlotId == filter.SlotId.Value);
             }
 
-            if (!string.IsNullOrWhiteSpace(filter.Keyword))
-            {
-                var keyword = filter.Keyword.Trim().ToLower();
-
-                rows = rows
-                    .Where(x =>
-                        (!string.IsNullOrWhiteSpace(x.ClassCode) && x.ClassCode.ToLower().Contains(keyword)) ||
-                        (!string.IsNullOrWhiteSpace(x.CourseCode) && x.CourseCode.ToLower().Contains(keyword)) ||
-                        (!string.IsNullOrWhiteSpace(x.CourseName) && x.CourseName.ToLower().Contains(keyword)) ||
-                        (!string.IsNullOrWhiteSpace(x.TeacherName) && x.TeacherName.ToLower().Contains(keyword)) ||
-                        (!string.IsNullOrWhiteSpace(x.RoomName) && x.RoomName.ToLower().Contains(keyword)))
-                    .ToList();
-            }
-
-            return rows;
+            return query.ToList();
         }
 
-        private ScheduleFilterOptionsViewModel BuildFilterOptions(List<ScheduleRow> rows, bool includeTeacher)
+        private ScheduleFilterOptionsViewModel BuildScheduleFilterOptions(DateTime anyDateInWeek, int? teacherId)
         {
-            var result = new ScheduleFilterOptionsViewModel();
+            var weekStart = GetWeekStart(anyDateInWeek);
+            var weekEnd = weekStart.AddDays(6);
 
-            if (includeTeacher)
-            {
-                result.TeacherOptions.Add(new ScheduleFilterOptionItem
+            var query =
+                from sc in _context.Schedules
+                join cl in _context.Classes on sc.ClassId equals cl.Id
+                join c in _context.Courses on cl.CourseId equals c.Id
+                join sl in _context.Slots on sc.SlotId equals sl.Id
+                join t in _context.Teachers on cl.TeacherId equals t.Id into teacherJoin
+                from t in teacherJoin.DefaultIfEmpty()
+                where cl.StartDate <= weekEnd && cl.EndDate >= weekStart
+                select new
                 {
-                    Id = null,
-                    DisplayName = "All teachers"
-                });
+                    TeacherId = cl.TeacherId,
+                    TeacherName = t != null ? t.FullName : "N/A",
+                    CourseId = c.Id,
+                    CourseName = c.Name,
+                    ClassId = cl.Id,
+                    cl.ClassCode,
+                    SlotId = sl.Id,
+                    SlotName = sl.SlotName,
+                    sl.StartTime
+                };
 
-                result.TeacherOptions.AddRange(
-                    rows.Where(x => x.TeacherId.HasValue)
-                        .GroupBy(x => new { Id = x.TeacherId!.Value, x.TeacherName })
-                        .OrderBy(x => x.Key.TeacherName)
-                        .Select(x => new ScheduleFilterOptionItem
-                        {
-                            Id = x.Key.Id,
-                            DisplayName = x.Key.TeacherName
-                        })
-                );
+            var data = query.ToList();
+
+            if (teacherId.HasValue)
+            {
+                data = data.Where(x => x.TeacherId == teacherId.Value).ToList();
             }
 
-            result.CourseOptions.Add(new ScheduleFilterOptionItem
+            return new ScheduleFilterOptionsViewModel
             {
-                Id = null,
-                DisplayName = "All courses"
-            });
+                TeacherOptions = data
+                    .Where(x => x.TeacherId.HasValue)
+                    .GroupBy(x => new { Id = x.TeacherId!.Value, x.TeacherName })
+                    .OrderBy(x => x.Key.TeacherName)
+                    .Select(x => new ScheduleFilterOptionItem
+                    {
+                        Id = x.Key.Id,
+                        DisplayName = x.Key.TeacherName
+                    })
+                    .ToList(),
 
-            result.CourseOptions.AddRange(
-                rows.GroupBy(x => new { x.CourseId, x.CourseCode, x.CourseName })
-                    .OrderBy(x => x.Key.CourseCode)
+                CourseOptions = data
+                    .GroupBy(x => new { x.CourseId, x.CourseName })
+                    .OrderBy(x => x.Key.CourseName)
                     .Select(x => new ScheduleFilterOptionItem
                     {
                         Id = x.Key.CourseId,
-                        DisplayName = $"{x.Key.CourseCode} - {x.Key.CourseName}"
+                        DisplayName = x.Key.CourseName
                     })
-            );
+                    .ToList(),
 
-            result.ClassOptions.Add(new ScheduleFilterOptionItem
-            {
-                Id = null,
-                DisplayName = "All classes"
-            });
-
-            result.ClassOptions.AddRange(
-                rows.GroupBy(x => new { x.ClassId, x.ClassCode })
+                ClassOptions = data
+                    .GroupBy(x => new { x.ClassId, x.ClassCode })
                     .OrderBy(x => x.Key.ClassCode)
                     .Select(x => new ScheduleFilterOptionItem
                     {
                         Id = x.Key.ClassId,
                         DisplayName = x.Key.ClassCode
                     })
-            );
+                    .ToList(),
 
-            result.SlotOptions.Add(new ScheduleFilterOptionItem
-            {
-                Id = null,
-                DisplayName = "All slots"
-            });
-
-            result.SlotOptions.AddRange(
-                rows.GroupBy(x => new { x.SlotId, x.SlotName, x.StartTime, x.EndTime })
+                SlotOptions = data
+                    .GroupBy(x => new { x.SlotId, x.SlotName, x.StartTime })
                     .OrderBy(x => x.Key.StartTime)
                     .Select(x => new ScheduleFilterOptionItem
                     {
                         Id = x.Key.SlotId,
-                        DisplayName = $"{x.Key.SlotName} ({x.Key.StartTime:hh\\:mm}-{x.Key.EndTime:hh\\:mm})"
+                        DisplayName = x.Key.SlotName
                     })
-            );
-
-            return result;
+                    .ToList()
+            };
         }
+
         private DateTime GetWeekStart(DateTime date)
         {
             int day = (int)date.DayOfWeek;
-            day = day == 0 ? 7 : day; // Sunday => 7
+            day = day == 0 ? 7 : day;
             return date.Date.AddDays(-(day - 1));
         }
-        private sealed class ScheduleRow
-        {
-            public int DayOfWeek { get; set; }
-            public int SlotId { get; set; }
-            public string SlotName { get; set; } = string.Empty;
-            public TimeSpan StartTime { get; set; }
-            public TimeSpan EndTime { get; set; }
 
-            public int ClassId { get; set; }
-            public string ClassCode { get; set; } = string.Empty;
-
-            public int CourseId { get; set; }
-            public string CourseCode { get; set; } = string.Empty;
-            public string CourseName { get; set; } = string.Empty;
-
-            public int? TeacherId { get; set; }
-            public string TeacherName { get; set; } = "N/A";
-
-            public string? RoomName { get; set; }
-
-            public DateTime ClassStartDate { get; set; }
-            public DateTime ClassEndDate { get; set; }
-        }
-        // =========================
-        // CRUD
-        // =========================
         public void AddSchedule(Schedule schedule)
         {
             _context.Schedules.Add(schedule);
@@ -527,7 +424,6 @@ namespace DataAccess
                 existing.DayOfWeek = schedule.DayOfWeek;
                 existing.SlotId = schedule.SlotId;
                 existing.RoomName = schedule.RoomName;
-
                 _context.SaveChanges();
             }
         }

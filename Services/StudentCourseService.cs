@@ -18,14 +18,11 @@ namespace Services
             return _repo.GetCourses(keyword, status);
         }
 
-
-        //màn detail
         public StudentCourseDetailDto? GetCourseById(int courseId)
         {
             return _repo.GetCourseById(courseId);
         }
 
-        //màn xem class đki
         public List<StudentClassDto> GetClassesByCourseId(int courseId, int studentId)
         {
             return _repo.GetClassesByCourseId(courseId, studentId);
@@ -38,7 +35,7 @@ namespace Services
             return (from e in context.Enrollments
                     join c in context.Classes on e.ClassId equals c.Id
                     where e.StudentId == studentId
-                          && (e.Status == "Pending" || e.Status == "Approved") 
+                          && (e.Status == "Pending" || e.Status == "Approved")
                           && c.CourseId == courseId
                     select e.Id).Any();
         }
@@ -52,7 +49,6 @@ namespace Services
 
             if (enrollment != null)
             {
-                // Nếu đã Cancel → cho đăng ký lại
                 if (enrollment.Status == "Cancel")
                 {
                     enrollment.Status = "Pending";
@@ -60,12 +56,10 @@ namespace Services
                     return;
                 }
 
-                // Nếu đang Pending/Approved → chặn
                 if (enrollment.Status == "Pending" || enrollment.Status == "Approved")
                     throw new Exception("Bạn đã đăng ký lớp này rồi!");
             }
 
-            // chưa từng đăng ký → tạo mới
             var newEnrollment = new Enrollment
             {
                 StudentId = studentId,
@@ -93,8 +87,6 @@ namespace Services
             enrollment.Status = "Cancel";
             context.SaveChanges();
         }
-
-
 
         public List<StudentEnrollmentDto> GetStudentEnrollments(int studentId)
         {

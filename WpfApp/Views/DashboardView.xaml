@@ -1,0 +1,15 @@
+﻿<UserControl x:Class="WpfApp.Views.DashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel>
+            <TextBlock x:Name="TitleText" FontSize="28" FontWeight="Bold"/>
+            <TextBlock x:Name="SubtitleText" Margin="0,8,0,20" Foreground="Gray"/>
+
+            <UniformGrid x:Name="StatGrid" Columns="4" Margin="0,0,0,20"/>
+            <Border Padding="18" Background="#F8FAFC" CornerRadius="12">
+                <TextBlock x:Name="InfoText" TextWrapping="Wrap"/>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
