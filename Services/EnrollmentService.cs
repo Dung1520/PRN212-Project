@@ -5,7 +5,16 @@ namespace Services
 {
     public class EnrollmentService : IEnrollmentService
     {
-        private readonly IEnrollmentRepository _repository = new EnrollmentRepository();
+        private readonly IEnrollmentRepository _repository;
+
+        public EnrollmentService() : this(new EnrollmentRepository())
+        {
+        }
+
+        public EnrollmentService(IEnrollmentRepository repository)
+        {
+            _repository = repository;
+        }
 
         public List<EnrollmentApprovalItem> GetRegistrationList(string? statusFilter = null, string? keyword = null)
             => _repository.GetRegistrationList(statusFilter, keyword);
