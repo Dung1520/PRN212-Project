@@ -1,0 +1,52 @@
+name: Build, Test, and Publish WPF App
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-test-publish:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore ProjectGr3.sln
+
+      - name: Build solution
+        run: dotnet build ProjectGr3.sln --configuration Release --no-restore
+
+      - name: Run unit tests
+        run: dotnet test TestProject1/TestProject1.csproj --configuration Release --no-build --collect:"XPlat Code Coverage"
+
+      - name: Publish WPF app
+        run: dotnet publish WpfApp/WpfApp.csproj --configuration Release --output publish-output
+
+      - name: Upload published app
+        uses: actions/upload-artifact@v4
+        with:
+          name: wpfapp-release
+          path: publish-output
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: TestProject1/TestResults
+          if-no-files-found: ignore
