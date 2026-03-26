@@ -16,13 +16,38 @@
                 </StackPanel>
 
                 <WrapPanel>
-                    <TextBox x:Name="KeywordTextBox" Width="220" Height="34" Margin="0,0,8,8" VerticalContentAlignment="Center"/>
-                    <ComboBox x:Name="TeacherFilterComboBox" Width="180" Margin="0,0,8,8" DisplayMemberPath="DisplayName" SelectedValuePath="Id"/>
-                    <ComboBox x:Name="CourseFilterComboBox" Width="180" Margin="0,0,8,8" DisplayMemberPath="DisplayName" SelectedValuePath="Id"/>
-                    <ComboBox x:Name="ClassFilterComboBox" Width="180" Margin="0,0,8,8" DisplayMemberPath="DisplayName" SelectedValuePath="Id"/>
-                    <ComboBox x:Name="SlotFilterComboBox" Width="150" Margin="0,0,8,8" DisplayMemberPath="DisplayName" SelectedValuePath="Id"/>
-                    <Button Width="100" Margin="0,0,8,8" Content="Lọc" Click="FilterButton_Click"/>
-                    <Button Width="100" Margin="0,0,8,8" Content="Xóa lọc" Click="ClearFilterButton_Click"/>
+                    <StackPanel Margin="0,0,8,8">
+                        <TextBlock Text="Tìm kiếm" Margin="0,0,0,4" FontWeight="SemiBold"/>
+                        <TextBox x:Name="KeywordTextBox" Width="220" Height="22" VerticalContentAlignment="Center" ToolTip="Nhập mã lớp, tên khóa học hoặc phòng học để tìm nhanh"/>
+                    </StackPanel>
+
+                    <StackPanel x:Name="TeacherFilterPanel" Margin="0,0,8,8">
+                        <TextBlock Text="Giáo viên" Margin="0,0,0,4" FontWeight="SemiBold"/>
+                        <ComboBox x:Name="TeacherFilterComboBox" Width="180" DisplayMemberPath="DisplayName" SelectedValuePath="Id" />
+                    </StackPanel>
+
+                    <StackPanel x:Name="CourseFilterPanel" Margin="0,0,8,8">
+                        <TextBlock Text="Khóa học" Margin="0,0,0,4" FontWeight="SemiBold"/>
+                        <ComboBox x:Name="CourseFilterComboBox" Width="180" DisplayMemberPath="DisplayName" SelectedValuePath="Id"/>
+                    </StackPanel>
+
+                    <StackPanel x:Name="ClassFilterPanel" Margin="0,0,8,8">
+                        <TextBlock Text="Lớp" Margin="0,0,0,4" FontWeight="SemiBold"/>
+                        <ComboBox x:Name="ClassFilterComboBox" Width="180" DisplayMemberPath="DisplayName" SelectedValuePath="Id" />
+                    </StackPanel>
+
+                    <StackPanel x:Name="SlotFilterPanel" Margin="0,0,8,8">
+                        <TextBlock Text="Slot học" Margin="0,0,0,4" FontWeight="SemiBold"/>
+                        <ComboBox x:Name="SlotFilterComboBox" Width="150" DisplayMemberPath="DisplayName" SelectedValuePath="Id"/>
+                    </StackPanel>
+
+                    <StackPanel Margin="0,20,8,8">
+                        <Button Width="100" Content="Lọc" Click="FilterButton_Click"/>
+                    </StackPanel>
+
+                    <StackPanel Margin="0,20,8,8">
+                        <Button Width="100" Content="Xóa lọc" Click="ClearFilterButton_Click"/>
+                    </StackPanel>
                 </WrapPanel>
             </StackPanel>
         </Border>

@@ -29,14 +29,14 @@ namespace WpfApp.Views
         {
             if (_user.Role == "Student")
             {
-                TeacherFilterComboBox.Visibility = Visibility.Collapsed;
-                CourseFilterComboBox.Visibility = Visibility.Collapsed;
-                ClassFilterComboBox.Visibility = Visibility.Collapsed;
-                SlotFilterComboBox.Visibility = Visibility.Collapsed;
+                TeacherFilterPanel.Visibility = Visibility.Collapsed;
+                CourseFilterPanel.Visibility = Visibility.Collapsed;
+                ClassFilterPanel.Visibility = Visibility.Collapsed;
+                SlotFilterPanel.Visibility = Visibility.Collapsed;
             }
             else if (_user.Role == "Teacher")
             {
-                TeacherFilterComboBox.Visibility = Visibility.Collapsed;
+                TeacherFilterPanel.Visibility = Visibility.Collapsed;
             }
         }
 
