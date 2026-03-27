@@ -87,7 +87,27 @@ namespace Services
             throw new Exception("Theo yêu cầu hiện tại, module Class không dùng chức năng Delete.");
         }
 
-        public List<Class> GetAllClasses() => _repo.GetAllClasses();
+        public List<Class> GetAllClasses()
+        {
+            var classes = _repo.GetAllClasses();
+
+            foreach (var c in classes)
+            {
+                if (c.Status == "Closed") continue;
+
+                int approvedCount = _context.Enrollments.Count(x => x.ClassId == c.Id && x.Status == "Approved");
+                string actualStatus = approvedCount >= c.Capacity ? "Full" : "Open";
+
+                var tracked = _context.Classes.FirstOrDefault(x => x.Id == c.Id);
+                if (tracked != null && tracked.Status != actualStatus)
+                {
+                    tracked.Status = actualStatus;
+                }
+            }
+
+            _context.SaveChanges();
+            return _repo.GetAllClasses();
+        }
 
         public Class? GetClassById(int id) => _repo.GetClassById(id);
 

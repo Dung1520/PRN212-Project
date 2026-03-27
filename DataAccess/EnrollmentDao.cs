@@ -5,6 +5,19 @@ namespace DataAccess
 {
     public class EnrollmentDao
     {
+        private void SyncClassStatus(LctmsDbContext context, int classId)
+        {
+            var trainingClass = context.Classes.FirstOrDefault(c => c.Id == classId);
+            if (trainingClass == null) return;
+
+            if (trainingClass.Status == "Closed") return;
+
+            int approvedCount = context.Enrollments.Count(e =>
+                e.ClassId == classId && e.Status == "Approved");
+
+            trainingClass.Status = approvedCount >= trainingClass.Capacity ? "Full" : "Open";
+        }
+
         public List<EnrollmentApprovalItem> GetRegistrationList(string? statusFilter = null, string? keyword = null)
         {
             using var context = DbContextFactory.CreateDbContext();
@@ -110,7 +123,7 @@ namespace DataAccess
 
                 if (approvedCount >= trainingClass.Capacity)
                 {
-                    trainingClass.Status = "Full";
+                    SyncClassStatus(context, trainingClass.Id);
                     context.SaveChanges();
                     transaction.Commit();
                     return OperationResult.Failure("Lớp đã đủ chỗ tại thời điểm duyệt.");
@@ -158,7 +171,7 @@ namespace DataAccess
                         .Where(s => s.ClassId == item.Id)
                         .Select(s => new { s.DayOfWeek, s.SlotId })
                         .AsEnumerable()
-                        .Select(s => (s.DayOfWeek, s.SlotId));
+                        .Select(s => ((int)s.DayOfWeek, s.SlotId));
 
                     if (existingSchedules.Any(s => targetSchedules.Contains(s)))
                     {
@@ -173,10 +186,7 @@ namespace DataAccess
                 enrollment.Status = "Approved";
                 context.SaveChanges();
 
-                approvedCount = context.Enrollments.Count(e =>
-                    e.ClassId == trainingClass.Id && e.Status == "Approved");
-
-                trainingClass.Status = approvedCount >= trainingClass.Capacity ? "Full" : "Open";
+                SyncClassStatus(context, trainingClass.Id);
                 context.SaveChanges();
 
                 transaction.Commit();
@@ -218,14 +228,8 @@ namespace DataAccess
                 enrollment.Status = "Rejected";
                 context.SaveChanges();
 
-                if (trainingClass.Status != "Closed")
-                {
-                    int approvedCount = context.Enrollments.Count(e =>
-                        e.ClassId == trainingClass.Id && e.Status == "Approved");
-
-                    trainingClass.Status = approvedCount >= trainingClass.Capacity ? "Full" : "Open";
-                    context.SaveChanges();
-                }
+                SyncClassStatus(context, trainingClass.Id);
+                context.SaveChanges();
 
                 transaction.Commit();
                 return OperationResult.Success(wasApproved
