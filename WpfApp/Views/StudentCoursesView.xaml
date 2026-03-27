@@ -8,35 +8,63 @@
         </Grid.RowDefinitions>
 
         <Border Grid.Row="0" Background="#F8FAFC" Padding="12" CornerRadius="12" Margin="0,0,0,12">
-            <DockPanel>
-                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
-                    <TextBox x:Name="KeywordTextBox" Width="240" Height="34" VerticalContentAlignment="Center"/>
-                    <ComboBox x:Name="StatusComboBox" Width="120" Margin="8,0,0,0" SelectedIndex="0">
-                        <ComboBoxItem Content="All" IsSelected="True"/>
-                        <ComboBoxItem Content="Open"/>
-                        <ComboBoxItem Content="Closed"/>
-                    </ComboBox>
-                    <Button Margin="8,0,0,0" Width="90" Content="Tìm" Click="Search_Click"/>
-                </StackPanel>
+            <StackPanel>
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
+                        <TextBox x:Name="KeywordTextBox" Width="240" Height="34" VerticalContentAlignment="Center"/>
+                        <ComboBox x:Name="StatusComboBox" Width="120" Margin="8,0,0,0" SelectedIndex="0">
+                            <ComboBoxItem Content="All" IsSelected="True"/>
+                            <ComboBoxItem Content="Open"/>
+                            <ComboBoxItem Content="Closed"/>
+                        </ComboBox>
+                        <Button Margin="8,0,0,0" Width="90" Content="Tìm" Click="Search_Click"/>
+                    </StackPanel>
 
-                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button x:Name="BackToListButton" Width="110" Margin="8,0,0,0" Content="← Back" Click="BackToListButton_Click" Visibility="Collapsed"/>
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button x:Name="BackToListButton" Width="110" Margin="8,0,0,0" Content="← Back" Click="BackToListButton_Click" Visibility="Collapsed"/>
+                    </StackPanel>
+                </DockPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                    <TextBox x:Name="AiPromptTextBox"
+                     Width="420"
+                     Height="34"
+                     VerticalContentAlignment="Center"
+                     ToolTip="Ví dụ: Muốn học IELTS từ cơ bản, dưới 7 triệu, ưu tiên lịch chiều hoặc tối"/>
+                    <Button Width="110"
+                    Margin="8,0,0,0"
+                    Content="AI Gợi ý"
+                    Click="AiRecommend_Click"/>
                 </StackPanel>
-            </DockPanel>
+            </StackPanel>
         </Border>
 
         <Grid Grid.Row="1">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
+            <Border x:Name="AiPanel"
+            Grid.Row="0"
+            Margin="0,0,0,12"
+            Background="#EEF6FF"
+            Padding="16"
+            CornerRadius="12"
+            Visibility="Collapsed">
+                <StackPanel>
+                    <TextBlock Text="Gợi ý từ AI" FontSize="22" FontWeight="Bold" Margin="0,0,0,8"/>
+                    <TextBlock x:Name="AiResultTextBlock" TextWrapping="Wrap"/>
+                </StackPanel>
+            </Border>
+
             <DataGrid x:Name="CourseGrid"
-                      Grid.Row="0"
-                      AutoGenerateColumns="False"
-                      IsReadOnly="True"
-                      SelectionMode="Single"
-                      CanUserAddRows="False">
+              Grid.Row="1"
+              AutoGenerateColumns="False"
+              IsReadOnly="True"
+              SelectionMode="Single"
+              CanUserAddRows="False">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Code" Binding="{Binding CourseCode}" Width="120"/>
                     <DataGridTextColumn Header="Course" Binding="{Binding CourseName}" Width="220"/>
@@ -61,14 +89,14 @@
                 </DataGrid.Columns>
             </DataGrid>
 
-            <Border x:Name="DetailPanel" Grid.Row="1" Margin="0,12,0,0" Background="#F8FAFC" Padding="16" CornerRadius="12" Visibility="Collapsed">
+            <Border x:Name="DetailPanel" Grid.Row="2" Margin="0,12,0,0" Background="#F8FAFC" Padding="16" CornerRadius="12" Visibility="Collapsed">
                 <StackPanel>
                     <TextBlock Text="Chi tiết khóa học" FontSize="22" FontWeight="Bold" Margin="0,0,0,12"/>
                     <TextBlock x:Name="DetailText" TextWrapping="Wrap"/>
                 </StackPanel>
             </Border>
 
-            <Border x:Name="ClassPanel" Grid.Row="1" Margin="0,12,0,0" Background="#F8FAFC" Padding="16" CornerRadius="12" Visibility="Collapsed">
+            <Border x:Name="ClassPanel" Grid.Row="2" Margin="0,12,0,0" Background="#F8FAFC" Padding="16" CornerRadius="12" Visibility="Collapsed">
                 <DockPanel>
                     <TextBlock DockPanel.Dock="Top" Text="Lớp khả dụng" FontSize="22" FontWeight="Bold" Margin="0,0,0,12"/>
                     <DataGrid x:Name="ClassGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">

@@ -11,11 +11,16 @@ namespace WpfApp.Views
         private readonly LoginUser _user;
         private readonly IStudentCourseService _service = new StudentCourseService();
         private int? _currentCourseId;
-
+        private readonly IAiCourseAdvisorService _aiService;
         public StudentCoursesView(LoginUser user)
         {
             InitializeComponent();
             _user = user;
+
+            _aiService = new AiCourseAdvisorService(
+                new StudentCourseService(),
+                new LmStudioRecommendationProvider("phogpt-4b-chat"));
+
             LoadCourses();
             ShowListOnly();
         }
@@ -122,6 +127,86 @@ namespace WpfApp.Views
             {
                 MessageBox.Show(ex.Message);
             }
+        }
+        private async void AiRecommend_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var prompt = AiPromptTextBox.Text.Trim();
+                if (string.IsNullOrWhiteSpace(prompt))
+                {
+                    MessageBox.Show("Vui lòng nhập nhu cầu học tập.");
+                    return;
+                }
+
+                var result = await _aiService.RecommendForStudentAsync(_user.UserId, prompt);
+
+                AiPanel.Visibility = Visibility.Visible;
+
+                if (!result.Items.Any())
+                {
+                    AiResultTextBlock.Text = result.Summary;
+                    return;
+                }
+
+                var lines = new List<string> { result.Summary, "" };
+
+                foreach (var item in result.Items)
+                {
+                    var matched = FindCandidateById(item.CandidateId, _user.UserId);
+                    if (matched != null)
+                    {
+                        lines.Add($"- {matched.ClassCode} | {matched.CourseName}");
+                        lines.Add($"  Lý do: {item.Reason}");
+                        lines.Add($"  Lịch: {matched.DayOfWeek}, {matched.Slot}");
+                        lines.Add($"  Học phí: {matched.Fee:0,0}");
+                        lines.Add("");
+                    }
+                }
+
+                AiResultTextBlock.Text = string.Join(Environment.NewLine, lines);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("AI suggestion failed: " + ex.Message);
+            }
+        }
+
+        private BusinessObjects.AiRecommendationCandidateDto? FindCandidateById(int classId, int studentId)
+        {
+            var courses = _service.GetCourses(null, "Open");
+
+            foreach (var course in courses)
+            {
+                if (_service.IsStudentAlreadyEnrolledInCourse(studentId, course.Id))
+                    continue;
+
+                var classes = _service.GetClassesByCourseId(course.Id, studentId);
+                var cls = classes.FirstOrDefault(x => x.Id == classId);
+                if (cls != null)
+                {
+                    return new BusinessObjects.AiRecommendationCandidateDto
+                    {
+                        CandidateId = cls.Id,
+                        CourseId = course.Id,
+                        CourseCode = course.CourseCode,
+                        CourseName = course.CourseName,
+                        Category = course.Category,
+                        DurationWeeks = course.DurationWeeks,
+                        Fee = course.Fee,
+                        ClassId = cls.Id,
+                        ClassCode = cls.ClassCode,
+                        StartDate = cls.StartDate,
+                        EndDate = cls.EndDate,
+                        DayOfWeek = cls.DayOfWeek,
+                        Slot = cls.Slot,
+                        Capacity = cls.Capacity,
+                        CurrentEnrollment = cls.CurrentEnrollment
+                    };
+                }
+            }
+
+            return null;
         }
     }
 }

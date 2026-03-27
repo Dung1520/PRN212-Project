@@ -1,0 +1,15 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace BusinessObjects
+{
+    public class AiRecommendationItemDto
+    {
+        public int CandidateId { get; set; }
+        public double Score { get; set; }
+        public string Reason { get; set; } = string.Empty;
+    }
+}
