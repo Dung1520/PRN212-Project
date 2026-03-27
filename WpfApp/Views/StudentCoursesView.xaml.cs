@@ -102,11 +102,18 @@ namespace WpfApp.Views
         private void Enroll_Click(object sender, RoutedEventArgs e)
         {
             var classId = int.Parse(((Button)sender).Tag == null ? "0" : ((Button)sender).Tag.ToString());
+
             try
             {
                 _service.RegisterClass(_user.UserId, classId);
-                MessageBox.Show("Đăng ký thành công. Trạng thái ban đầu là Pending.");
-                if (_currentCourseId.HasValue)
+
+                MessageBox.Show("Đăng ký thành công. Hệ thống sẽ chuyển sang màn 'Đăng ký của tôi'.");
+
+                if (Application.Current.MainWindow is MainWindow mainWindow)
+                {
+                    mainWindow.NavigateTo("registrations", true);
+                }
+                else if (_currentCourseId.HasValue)
                 {
                     ShowAvailableClassPanel(_currentCourseId.Value);
                 }

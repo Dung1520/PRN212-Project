@@ -33,27 +33,15 @@ namespace DataAccess
             foreach (var item in rawData)
             {
                 bool classStarted = DateTime.Today >= item.StartDate.Date;
-                bool classClosed = item.ClassStatus == "Closed";
-                bool classFull = item.ApprovedCount >= item.Capacity;
+                bool classOpen = item.ClassStatus == "Open";
+                bool classFullByApproved = item.ApprovedCount >= item.Capacity;
 
-                item.CanApprove =
-                    (
-                        item.EnrollmentStatus == "Pending"
-                        && !classStarted
-                        && !classClosed
-                        && !classFull
-                    )
-                    ||
-                    (
-                        item.EnrollmentStatus == "Rejected"
-                        && !classStarted
-                        && !classClosed
-                        && !classFull
-                    );
+                item.CanApprove = item.EnrollmentStatus == "Pending"
+                                  && !classStarted
+                                  && classOpen
+                                  && !classFullByApproved;
 
-                item.CanReject =
-                    (item.EnrollmentStatus == "Pending" || item.EnrollmentStatus == "Approved")
-                    && !classStarted;
+                item.CanReject = item.EnrollmentStatus == "Pending" && !classStarted;
 
                 if (item.EnrollmentStatus == "Cancel")
                 {
@@ -83,9 +71,7 @@ namespace DataAccess
                     x.ClassCode.ToLower().Contains(keyword));
             }
 
-            return query
-                .OrderBy(x => x.EnrollmentId)   // sửa theo ID tăng dần
-                .ToList();
+            return query.OrderBy(x => x.EnrollmentId).ToList();
         }
 
         public OperationResult ApproveEnrollment(int enrollmentId)
@@ -99,36 +85,90 @@ namespace DataAccess
                 if (enrollment == null)
                     return OperationResult.Failure("Không tìm thấy đơn đăng ký.");
 
+                if (enrollment.Status != "Pending")
+                    return OperationResult.Failure("Chỉ được duyệt đơn đang ở trạng thái Pending.");
+
                 var trainingClass = context.Classes.FirstOrDefault(c => c.Id == enrollment.ClassId);
                 if (trainingClass == null)
                     return OperationResult.Failure("Không tìm thấy lớp học.");
 
+                var course = context.Courses.FirstOrDefault(c => c.Id == trainingClass.CourseId);
+                if (course == null)
+                    return OperationResult.Failure("Không tìm thấy khóa học.");
+
+                if (course.Status != "Open")
+                    return OperationResult.Failure("Khóa học đã đóng, không thể duyệt đăng ký.");
+
+                if (trainingClass.Status != "Open")
+                    return OperationResult.Failure("Chỉ được duyệt khi lớp đang ở trạng thái Open.");
+
                 if (DateTime.Today >= trainingClass.StartDate.Date)
-                    return OperationResult.Failure("Lớp đã bắt đầu học, không thể đổi trạng thái.");
-
-                if (trainingClass.Status == "Closed")
-                    return OperationResult.Failure("Lớp đã đóng, không thể duyệt.");
-
-                if (enrollment.Status == "Cancel")
-                    return OperationResult.Failure("Đơn đã bị sinh viên hủy, admin không thể tác động.");
-
-                if (enrollment.Status == "Approved")
-                    return OperationResult.Failure("Đơn này đã được duyệt.");
+                    return OperationResult.Failure("Lớp đã bắt đầu học, không thể duyệt.");
 
                 int approvedCount = context.Enrollments.Count(e =>
                     e.ClassId == trainingClass.Id && e.Status == "Approved");
 
                 if (approvedCount >= trainingClass.Capacity)
                 {
-                    // Không auto reject cứng ở đây nữa.
-                    // Giữ Rejected nếu không duyệt được do full.
-                    enrollment.Status = "Rejected";
                     trainingClass.Status = "Full";
                     context.SaveChanges();
                     transaction.Commit();
-
-                    return OperationResult.Failure("Lớp đã đủ người, không thể duyệt.");
+                    return OperationResult.Failure("Lớp đã đủ chỗ tại thời điểm duyệt.");
                 }
+
+                bool sameCourseConflict =
+                    (from e in context.Enrollments
+                     join c in context.Classes on e.ClassId equals c.Id
+                     where e.StudentId == enrollment.StudentId
+                           && e.Id != enrollment.Id
+                           && (e.Status == "Pending" || e.Status == "Approved")
+                           && c.CourseId == trainingClass.CourseId
+                     select e.Id).Any();
+
+                if (sameCourseConflict)
+                    return OperationResult.Failure("Học viên đang có lớp Pending/Approved khác của cùng khóa học.");
+
+                var targetSchedules = context.Schedules
+                    .Where(x => x.ClassId == trainingClass.Id)
+                    .Select(x => new { x.DayOfWeek, x.SlotId })
+                    .AsEnumerable()
+                    .Select(x => ((int)x.DayOfWeek, x.SlotId))
+                    .ToHashSet();
+
+                if (targetSchedules.Count == 0)
+                    return OperationResult.Failure("Lớp chưa có lịch học hợp lệ.");
+
+                var approvedClassesOfStudent =
+                    (from e in context.Enrollments
+                     join c in context.Classes on e.ClassId equals c.Id
+                     where e.StudentId == enrollment.StudentId
+                           && e.Id != enrollment.Id
+                           && e.Status == "Approved"
+                           && c.StartDate <= trainingClass.EndDate
+                           && c.EndDate >= trainingClass.StartDate
+                     select new { c.Id, c.ClassCode })
+                     .AsEnumerable()
+                     .ToList();
+
+                string? conflictClassCode = null;
+
+                foreach (var item in approvedClassesOfStudent)
+                {
+                    var existingSchedules = context.Schedules
+                        .Where(s => s.ClassId == item.Id)
+                        .Select(s => new { s.DayOfWeek, s.SlotId })
+                        .AsEnumerable()
+                        .Select(s => (s.DayOfWeek, s.SlotId));
+
+                    if (existingSchedules.Any(s => targetSchedules.Contains(s)))
+                    {
+                        conflictClassCode = item.ClassCode;
+                        break;
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(conflictClassCode))
+                    return OperationResult.Failure($"Học viên bị trùng lịch với lớp đã Approved: {conflictClassCode}.");
 
                 enrollment.Status = "Approved";
                 context.SaveChanges();
@@ -140,7 +180,7 @@ namespace DataAccess
                 context.SaveChanges();
 
                 transaction.Commit();
-                return OperationResult.Success("Đổi trạng thái sang Approved thành công.");
+                return OperationResult.Success("Duyệt đăng ký thành công.");
             }
             catch (Exception ex)
             {
@@ -178,7 +218,7 @@ namespace DataAccess
                 enrollment.Status = "Rejected";
                 context.SaveChanges();
 
-                if (wasApproved && trainingClass.Status != "Closed")
+                if (trainingClass.Status != "Closed")
                 {
                     int approvedCount = context.Enrollments.Count(e =>
                         e.ClassId == trainingClass.Id && e.Status == "Approved");
@@ -188,7 +228,9 @@ namespace DataAccess
                 }
 
                 transaction.Commit();
-                return OperationResult.Success("Đổi trạng thái sang Rejected thành công.");
+                return OperationResult.Success(wasApproved
+                    ? "Chuyển từ Approved sang Rejected thành công."
+                    : "Từ chối đăng ký thành công.");
             }
             catch (Exception ex)
             {

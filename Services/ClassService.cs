@@ -1,10 +1,6 @@
 ﻿using BusinessObjects;
 using DataAccess;
-using Microsoft.EntityFrameworkCore;
 using Repositories;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Services
 {
@@ -133,6 +129,9 @@ namespace Services
             if (course == null)
                 throw new Exception("Khóa học không tồn tại.");
 
+            if (course.Status != "Open" && c.Status == "Open")
+                throw new Exception("Không được mở lớp khi khóa học đang Closed.");
+
             c.EndDate = c.StartDate.AddDays(course.DurationWeeks * 7 - 1);
 
             bool duplicateClassCode = _context.Classes.Any(x =>
@@ -145,6 +144,16 @@ namespace Services
             if (schedules == null || schedules.Count == 0)
                 throw new Exception("Bạn phải nhập ít nhất một dòng lịch học.");
 
+            if (c.Status == "Open" && !c.TeacherId.HasValue)
+                throw new Exception("Không được chuyển lớp sang Open khi chưa phân công giáo viên.");
+
+            if (c.TeacherId.HasValue)
+            {
+                var teacher = _context.Teachers.FirstOrDefault(x => x.Id == c.TeacherId.Value);
+                if (teacher == null || !teacher.IsActive)
+                    throw new Exception("Giáo viên không tồn tại hoặc đã bị khóa.");
+            }
+
             foreach (var s in schedules)
             {
                 if (s.DayOfWeek < 1 || s.DayOfWeek > 7)
@@ -152,6 +161,10 @@ namespace Services
 
                 if (s.SlotId <= 0)
                     throw new Exception("Bạn phải chọn slot.");
+
+                bool slotExists = _context.Slots.Any(x => x.Id == s.SlotId);
+                if (!slotExists)
+                    throw new Exception("Slot không tồn tại.");
 
                 if (string.IsNullOrWhiteSpace(s.RoomName))
                     throw new Exception("Tên phòng không được để trống.");
@@ -173,10 +186,12 @@ namespace Services
                      join cl in _context.Classes on sc.ClassId equals cl.Id
                      where sc.DayOfWeek == s.DayOfWeek
                            && sc.SlotId == s.SlotId
-                           && sc.RoomName == s.RoomName
+                           && sc.RoomName != null
+                           && sc.RoomName.ToLower() == s.RoomName.ToLower()
                            && (!isUpdate || cl.Id != c.Id)
                            && cl.StartDate <= c.EndDate
                            && cl.EndDate >= c.StartDate
+                           && cl.Status != "Closed"
                      select sc.Id).Any();
 
                 if (roomConflict)
@@ -193,12 +208,20 @@ namespace Services
                                && (!isUpdate || cl.Id != c.Id)
                                && cl.StartDate <= c.EndDate
                                && cl.EndDate >= c.StartDate
+                               && cl.Status != "Closed"
                          select sc.Id).Any();
 
                     if (teacherConflict)
                         throw new Exception("Giáo viên đã bị trùng lịch trong khoảng thời gian lớp này học.");
                 }
             }
+
+            int approvedCount = _context.Enrollments.Count(x => x.ClassId == c.Id && x.Status == "Approved");
+            if (c.Status == "Full" && approvedCount < c.Capacity)
+                throw new Exception("Không được tự đặt trạng thái Full khi số Approved chưa đủ capacity.");
+
+            if (c.Status == "Open" && schedules.Count == 0)
+                throw new Exception("Không được chuyển lớp sang Open khi chưa có schedule.");
         }
     }
 }

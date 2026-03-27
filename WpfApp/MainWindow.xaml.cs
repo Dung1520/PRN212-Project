@@ -1,5 +1,6 @@
 ﻿using BusinessObjects;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using WpfApp.Views;
@@ -72,9 +73,15 @@ namespace WpfApp
             };
         }
 
-        private UserControl ResolvePage(string key)
+        private UserControl ResolvePage(string key, bool forceReload = false)
         {
             if (_currentUser == null) return new LoginView(OnLoginSuccess);
+
+            if (forceReload && _cache.ContainsKey(key))
+            {
+                _cache.Remove(key);
+            }
+
             if (_cache.TryGetValue(key, out var page)) return page;
 
             page = key switch
@@ -90,7 +97,7 @@ namespace WpfApp
                 "people" => new AdminPeopleView(),
                 "schedule" => new ScheduleView(_currentUser),
                 "profile" => new ProfileView(_currentUser),
-                 _ => new UserControl
+                _ => new UserControl
                 {
                     Content = new TextBlock
                     {
@@ -103,6 +110,17 @@ namespace WpfApp
 
             _cache[key] = page;
             return page;
+        }
+
+        public void NavigateTo(string key, bool forceReload = false)
+        {
+            if (NavListBox.ItemsSource is not IEnumerable<MenuItemVm> items) return;
+
+            var target = items.FirstOrDefault(x => x.Key == key);
+            if (target == null) return;
+
+            MainContent.Content = ResolvePage(key, forceReload);
+            NavListBox.SelectedItem = target;
         }
 
         private void NavListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)

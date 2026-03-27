@@ -1,9 +1,5 @@
 ﻿using BusinessObjects;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace DataAccess
 {
@@ -24,12 +20,17 @@ namespace DataAccess
 
         public List<Class> GetAllClasses()
         {
-            return _context.Classes.ToList();
+            return _context.Classes
+                .AsNoTracking()
+                .OrderBy(x => x.ClassCode)
+                .ToList();
         }
 
         public Class? GetClassById(int id)
         {
-            return _context.Classes.FirstOrDefault(x => x.Id == id);
+            return _context.Classes
+                .AsNoTracking()
+                .FirstOrDefault(x => x.Id == id);
         }
 
         public void UpdateClass(Class c)

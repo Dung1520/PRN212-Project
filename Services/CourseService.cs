@@ -1,7 +1,7 @@
 ﻿using BusinessObjects;
+using DataAccess;
 using Repositories;
-using System;
-using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Services
 {
@@ -34,6 +34,26 @@ namespace Services
 
             ValidateCourse(course, isUpdate: true);
             course.CreatedAt = existing.CreatedAt;
+
+            using var context = new LctmsDbContext();
+            bool hasClasses = context.Classes.Any(x => x.CourseId == course.Id);
+
+            if (hasClasses)
+            {
+                if (!string.Equals(existing.CourseCode, course.CourseCode, StringComparison.OrdinalIgnoreCase))
+                    throw new Exception("Khóa học đã có lớp, không được sửa CourseCode.");
+
+                if (existing.DurationWeeks != course.DurationWeeks)
+                    throw new Exception("Khóa học đã có lớp, không được sửa DurationWeeks.");
+
+                if (existing.Fee != course.Fee)
+                    throw new Exception("Khóa học đã có lớp, không được sửa Fee.");
+            }
+
+            bool hasOpenClasses = context.Classes.Any(x => x.CourseId == course.Id && x.Status == "Open");
+            if (course.Status == "Closed" && hasOpenClasses)
+                throw new Exception("Không thể đóng course khi vẫn còn class đang Open.");
+
             _repo.UpdateCourse(course);
         }
 
@@ -56,6 +76,9 @@ namespace Services
             if (string.IsNullOrWhiteSpace(course.CourseCode))
                 throw new Exception("Course code không được để trống.");
 
+            if (!Regex.IsMatch(course.CourseCode, @"^[A-Za-z0-9\-]+$"))
+                throw new Exception("Course code chỉ nên gồm chữ, số và dấu gạch ngang.");
+
             if (string.IsNullOrWhiteSpace(course.Name))
                 throw new Exception("Tên khóa học không được để trống.");
 
@@ -74,6 +97,13 @@ namespace Services
 
             if (duplicateCode)
                 throw new Exception("Course code đã tồn tại.");
+
+            bool duplicateName = _repo.GetAllCourses().Any(x =>
+                x.Name.Equals(course.Name, StringComparison.OrdinalIgnoreCase)
+                && (!isUpdate || x.Id != course.Id));
+
+            if (duplicateName)
+                throw new Exception("Tên khóa học đã tồn tại.");
         }
     }
 }

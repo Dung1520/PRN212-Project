@@ -65,7 +65,11 @@ namespace WpfApp.Views
 
         private void LoadClasses()
         {
-            _items = _classService.GetAllClasses().OrderBy(x => x.ClassCode).ToList();
+            _items = _classService.GetAllClasses()
+                .OrderBy(x => x.ClassCode)
+                .ToList();
+
+            ClassGrid.ItemsSource = null;
             ApplyFilter();
         }
 
