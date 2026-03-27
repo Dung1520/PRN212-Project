@@ -15,7 +15,7 @@
                     <TextBlock x:Name="WeekText" VerticalAlignment="Center" Margin="16,0,0,0" FontSize="18" FontWeight="Bold"/>
                 </StackPanel>
 
-                <WrapPanel>
+                <WrapPanel x:Name="FilterBarPanel">
                     <StackPanel Margin="0,0,8,8">
                         <TextBlock Text="Tìm kiếm" Margin="0,0,0,4" FontWeight="SemiBold"/>
                         <TextBox x:Name="KeywordTextBox" Width="220" Height="22" VerticalContentAlignment="Center" ToolTip="Nhập mã lớp, tên khóa học hoặc phòng học để tìm nhanh"/>

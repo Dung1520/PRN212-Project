@@ -1,7 +1,8 @@
-﻿using System.Net.Http;
+﻿using BusinessObjects;
+using System.Net.Http;
+using System.Runtime.Intrinsics.X86;
 using System.Text;
 using System.Text.Json;
-using BusinessObjects;
 
 namespace Services
 {
@@ -15,7 +16,7 @@ namespace Services
             _modelName = modelName;
             _httpClient = httpClient ?? new HttpClient
             {
-                Timeout = TimeSpan.FromSeconds(60)
+                Timeout = TimeSpan.FromSeconds(180)
             };
         }
 
@@ -33,7 +34,8 @@ namespace Services
                     new
                     {
                         role = "system",
-                        content = "Bạn là trợ lý tư vấn lớp IELTS. Chỉ được chọn từ danh sách candidate được cung cấp. Không được bịa class mới. BẮT BUỘC chỉ trả về JSON hợp lệ, không thêm giải thích ngoài JSON."
+                       content = "Bạn là trợ lý tư vấn lớp IELTS. Chỉ được chọn candidate từ danh sách đã cho. Không được tạo candidate mới. Chỉ trả về đúng 1 JSON object hợp lệ. " +
+                       "Không markdown. Không backtick. Không ví dụ. Không giải thích. Không thêm bất kỳ text nào ngoài JSON."
                     },
                     new
                     {
@@ -41,7 +43,8 @@ namespace Services
                         content = prompt
                     }
                 },
-                temperature = 0.2
+                temperature = 0.2,
+                max_tokens = 250
             };
 
             var json = JsonSerializer.Serialize(requestBody);
@@ -89,25 +92,35 @@ namespace Services
             sb.AppendLine("Yêu cầu của sinh viên:");
             sb.AppendLine(pref.RawPrompt);
             sb.AppendLine();
-            sb.AppendLine("Danh sách candidate hợp lệ:");
 
+            sb.AppendLine("Danh sách candidate hợp lệ:");
             foreach (var c in candidates)
             {
                 sb.AppendLine(
-                    $"- candidateId={c.CandidateId}; course={c.CourseCode}-{c.CourseName}; class={c.ClassCode}; " +
-                    $"fee={c.Fee}; weeks={c.DurationWeeks}; day={c.DayOfWeek}; slot={c.Slot}; " +
-                    $"start={c.StartDate:dd/MM/yyyy}; seatsLeft={c.SeatsLeft}");
+                    $"- candidateId={c.CandidateId}; course={c.CourseName}; class={c.ClassCode}; fee={c.Fee}; day={c.DayOfWeek}; slot={c.Slot}; seatsLeft={c.SeatsLeft}");
             }
 
             sb.AppendLine();
-            sb.AppendLine("Trả về JSON đúng format:");
+            sb.AppendLine("Hãy chọn tối đa 3 candidate phù hợp nhất.");
+            sb.AppendLine("Chỉ được dùng candidateId có trong danh sách.");
+            sb.AppendLine("Summary chỉ 1 câu ngắn.");
+            sb.AppendLine("Reason của mỗi item chỉ 1 câu ngắn.");
+            sb.AppendLine("KHÔNG được trả ví dụ.");
+            sb.AppendLine("KHÔNG được dùng markdown.");
+            sb.AppendLine("KHÔNG được dùng backtick.");
+            sb.AppendLine("KHÔNG được thêm bất kỳ text nào ngoài JSON.");
+            sb.AppendLine("Chỉ trả về đúng JSON này:");
             sb.AppendLine("{");
             sb.AppendLine("  \"summary\": \"...\",");
             sb.AppendLine("  \"items\": [");
             sb.AppendLine("    { \"candidateId\": 1, \"score\": 0.95, \"reason\": \"...\" }");
             sb.AppendLine("  ]");
             sb.AppendLine("}");
-            sb.AppendLine("Chỉ chọn tối đa 3 item. Không được tạo candidateId ngoài danh sách.");
+            sb.AppendLine("Nếu không có lựa chọn phù hợp thì trả:");
+            sb.AppendLine("{");
+            sb.AppendLine("  \"summary\": \"Không tìm thấy lớp phù hợp.\",");
+            sb.AppendLine("  \"items\": []");
+            sb.AppendLine("}");
 
             return sb.ToString();
         }

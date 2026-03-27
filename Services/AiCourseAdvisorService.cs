@@ -81,11 +81,24 @@ namespace Services
                 };
             }
 
+            var shortlisted = candidates
+                .Select(x => new
+                {
+                    Candidate = x,
+                    Score = CalculateScore(x, pref)
+                })
+                .OrderByDescending(x => x.Score)
+                .ThenBy(x => x.Candidate.Fee)
+                .ThenBy(x => x.Candidate.StartDate)
+                .Take(10)
+                .Select(x => x.Candidate)
+                .ToList();
+
             try
             {
-                var aiResult = await _provider.RecommendAsync(pref, candidates);
+                var aiResult = await _provider.RecommendAsync(pref, shortlisted);
 
-                var validIds = candidates.Select(x => x.CandidateId).ToHashSet();
+                var validIds = shortlisted.Select(x => x.CandidateId).ToHashSet();
                 aiResult.Items = aiResult.Items
                     .Where(x => validIds.Contains(x.CandidateId))
                     .OrderByDescending(x => x.Score)
@@ -93,13 +106,13 @@ namespace Services
                     .ToList();
 
                 if (!aiResult.Items.Any())
-                    return BuildFallback(candidates, pref);
+                    return BuildFallback(shortlisted, pref);
 
                 return aiResult;
             }
             catch (Exception ex)
             {
-                var fallback = BuildFallback(candidates, pref);
+                var fallback = BuildFallback(shortlisted, pref);
                 fallback.Summary = "AI lỗi, đang fallback. Chi tiết: " + ex.Message;
                 return fallback;
             }
@@ -128,7 +141,7 @@ namespace Services
                 {
                     CandidateId = x.Candidate.CandidateId,
                     Score = x.Score,
-                    Reason = $"Phù hợp với điều kiện học phí/lịch học và đang còn chỗ."
+                    Reason = "Phù hợp với điều kiện học phí, lịch học và đang còn chỗ."
                 }).ToList()
             };
         }
