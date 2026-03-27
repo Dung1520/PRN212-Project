@@ -29,10 +29,8 @@ namespace WpfApp.Views
         {
             if (_user.Role == "Student")
             {
-                TeacherFilterPanel.Visibility = Visibility.Collapsed;
-                CourseFilterPanel.Visibility = Visibility.Collapsed;
-                ClassFilterPanel.Visibility = Visibility.Collapsed;
-                SlotFilterPanel.Visibility = Visibility.Collapsed;
+                FilterBarPanel.Visibility = Visibility.Collapsed;
+                return;
             }
             else if (_user.Role == "Teacher")
             {
