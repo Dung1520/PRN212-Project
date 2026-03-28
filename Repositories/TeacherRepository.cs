@@ -25,8 +25,12 @@ namespace Repositories
 
         public Teacher? GetTeacherById(int id)
             => _dao.GetTeacherById(id);
+
+        public AdminTeacherDetailDto? GetTeacherDetailById(int id)
+            => _dao.GetTeacherDetailById(id);
+
         public Teacher? GetByEmail(string email)
-        => _dao.GetByEmail(email);
+            => _dao.GetByEmail(email);
 
         public OperationResult UpdateOwnProfile(Teacher teacher)
             => _dao.UpdateOwnProfile(teacher);

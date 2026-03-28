@@ -14,6 +14,7 @@ namespace Repositories
         List<TeacherListItem> GetTeacherList(string? keyword = null);
         List<Teacher> GetAllTeachers();
         Teacher? GetTeacherById(int id);
+        AdminTeacherDetailDto? GetTeacherDetailById(int id);
         Teacher? GetByEmail(string email);
         OperationResult UpdateOwnProfile(Teacher teacher);
     }

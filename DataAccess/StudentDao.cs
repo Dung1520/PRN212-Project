@@ -45,6 +45,95 @@ namespace DataAccess
                 .FirstOrDefault(s => s.Id == id);
         }
 
+        public AdminStudentDetailDto? GetStudentDetailById(int id)
+        {
+            using var context = DbContextFactory.CreateDbContext();
+
+            var student = context.Students
+                .AsNoTracking()
+                .FirstOrDefault(s => s.Id == id);
+
+            if (student == null)
+                return null;
+
+            var enrollmentRows =
+                (from e in context.Enrollments.AsNoTracking()
+                 join c in context.Classes.AsNoTracking() on e.ClassId equals c.Id
+                 join co in context.Courses.AsNoTracking() on c.CourseId equals co.Id
+                 join t in context.Teachers.AsNoTracking() on c.TeacherId equals t.Id into teacherJoin
+                 from t in teacherJoin.DefaultIfEmpty()
+                 where e.StudentId == id
+                 orderby e.RegisteredAt descending, c.StartDate descending
+                 select new
+                 {
+                     Enrollment = e,
+                     Class = c,
+                     Course = co,
+                     TeacherName = t != null ? t.FullName : null
+                 }).ToList();
+
+            var classIds = enrollmentRows
+                .Select(x => x.Class.Id)
+                .Distinct()
+                .ToList();
+
+            var scheduleRows = context.Schedules
+                .AsNoTracking()
+                .Where(s => classIds.Contains(s.ClassId))
+                .Join(context.Slots.AsNoTracking(),
+                    s => s.SlotId,
+                    sl => sl.Id,
+                    (s, sl) => new
+                    {
+                        s.ClassId,
+                        s.DayOfWeek,
+                        SlotName = sl.SlotName,
+                        sl.StartTime,
+                        sl.EndTime,
+                        s.RoomName
+                    })
+                .ToList()
+                .GroupBy(x => x.ClassId)
+                .ToDictionary(
+                    g => g.Key,
+                    g => string.Join(" | ", g.OrderBy(x => x.DayOfWeek).ThenBy(x => x.StartTime)
+                        .Select(x => $"{GetDayName(x.DayOfWeek)} - {x.SlotName} ({x.StartTime:hh\\:mm}-{x.EndTime:hh\\:mm}){(string.IsNullOrWhiteSpace(x.RoomName) ? string.Empty : $" - {x.RoomName}")}")));
+
+            return new AdminStudentDetailDto
+            {
+                Id = student.Id,
+                StudentCode = student.StudentCode,
+                Username = student.Username,
+                FullName = student.FullName,
+                Email = student.Email,
+                PhoneNumber = student.PhoneNumber,
+                DateOfBirth = student.DateOfBirth,
+                Gender = student.Gender,
+                Address = student.Address,
+                IsActive = student.IsActive,
+                CreatedAt = student.CreatedAt,
+                PendingCount = enrollmentRows.Count(x => x.Enrollment.Status == "Pending"),
+                ApprovedCount = enrollmentRows.Count(x => x.Enrollment.Status == "Approved"),
+                RejectedCount = enrollmentRows.Count(x => x.Enrollment.Status == "Rejected"),
+                Enrollments = enrollmentRows.Select(x => new AdminStudentEnrollmentDetailItem
+                {
+                    EnrollmentId = x.Enrollment.Id,
+                    ClassId = x.Class.Id,
+                    CourseId = x.Course.Id,
+                    CourseCode = x.Course.CourseCode,
+                    CourseName = x.Course.Name,
+                    ClassCode = x.Class.ClassCode,
+                    EnrollmentStatus = x.Enrollment.Status,
+                    ClassStatus = x.Class.Status,
+                    TeacherName = x.TeacherName,
+                    RegisteredAt = x.Enrollment.RegisteredAt,
+                    StartDate = x.Class.StartDate,
+                    EndDate = x.Class.EndDate,
+                    ScheduleText = scheduleRows.TryGetValue(x.Class.Id, out var text) ? text : string.Empty
+                }).ToList()
+            };
+        }
+
         public Student? GetByEmail(string email)
         {
             using var context = DbContextFactory.CreateDbContext();
@@ -151,6 +240,21 @@ namespace DataAccess
 
             var nextNumber = existingNumbers.Any() ? existingNumbers.Max() + 1 : 1;
             return $"ST{nextNumber:000}";
+        }
+
+        private static string GetDayName(int dayOfWeek)
+        {
+            return dayOfWeek switch
+            {
+                1 => "Mon",
+                2 => "Tue",
+                3 => "Wed",
+                4 => "Thu",
+                5 => "Fri",
+                6 => "Sat",
+                7 => "Sun",
+                _ => "N/A"
+            };
         }
     }
 }

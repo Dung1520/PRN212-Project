@@ -26,6 +26,10 @@ namespace Services
 
         public Teacher? GetTeacherById(int id)
             => _repo.GetTeacherById(id);
+
+        public AdminTeacherDetailDto? GetTeacherDetailById(int id)
+            => _repo.GetTeacherDetailById(id);
+
         public OperationResult UpdateOwnProfile(Teacher teacher)
         {
             if (teacher == null)

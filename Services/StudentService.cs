@@ -14,6 +14,9 @@ namespace Services
         public Student? GetStudentById(int id)
             => _repository.GetStudentById(id);
 
+        public AdminStudentDetailDto? GetStudentDetailById(int id)
+            => _repository.GetStudentDetailById(id);
+
         public OperationResult RegisterStudent(StudentRegistrationRequest request)
         {
             if (request == null)

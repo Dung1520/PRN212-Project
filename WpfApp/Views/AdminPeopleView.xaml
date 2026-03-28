@@ -1,36 +1,129 @@
 ﻿<UserControl x:Class="WpfApp.Views.AdminPeopleView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <TabControl>
-        <TabItem Header="Students">
-            <DockPanel Margin="10">
-                <TextBox x:Name="StudentKeywordTextBox" DockPanel.Dock="Top" Height="34" Margin="0,0,0,10"/>
-                <Button DockPanel.Dock="Top" Width="100" Margin="0,0,0,10" Content="Tìm student" Click="SearchStudents_Click"/>
-                <DataGrid x:Name="StudentGrid" AutoGenerateColumns="False" IsReadOnly="True">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Code" Binding="{Binding StudentCode}" Width="120"/>
-                        <DataGridTextColumn Header="Full Name" Binding="{Binding FullName}" Width="180"/>
-                        <DataGridTextColumn Header="Email" Binding="{Binding Email}" Width="180"/>
-                        <DataGridTextColumn Header="Phone" Binding="{Binding PhoneNumber}" Width="130"/>
-                        <DataGridTextColumn Header="Gender" Binding="{Binding Gender}" Width="80"/>
-                    </DataGrid.Columns>
-                </DataGrid>
-            </DockPanel>
-        </TabItem>
-        <TabItem Header="Teachers">
-            <DockPanel Margin="10">
-                <TextBox x:Name="TeacherKeywordTextBox" DockPanel.Dock="Top" Height="34" Margin="0,0,0,10"/>
-                <Button DockPanel.Dock="Top" Width="100" Margin="0,0,0,10" Content="Tìm teacher" Click="SearchTeachers_Click"/>
-                <DataGrid x:Name="TeacherGrid" AutoGenerateColumns="False" IsReadOnly="True">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Code" Binding="{Binding TeacherCode}" Width="120"/>
-                        <DataGridTextColumn Header="Full Name" Binding="{Binding FullName}" Width="180"/>
-                        <DataGridTextColumn Header="Email" Binding="{Binding Email}" Width="180"/>
-                        <DataGridTextColumn Header="Phone" Binding="{Binding PhoneNumber}" Width="130"/>
-                        <DataGridTextColumn Header="Gender" Binding="{Binding Gender}" Width="80"/>
-                    </DataGrid.Columns>
-                </DataGrid>
-            </DockPanel>
-        </TabItem>
-    </TabControl>
+    <Grid Margin="10">
+        <TabControl>
+            <TabItem Header="Students">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                        <TextBox x:Name="StudentKeywordTextBox" Width="280" Height="34" Margin="0,0,10,0" VerticalContentAlignment="Center"/>
+                        <Button Width="110" Content="Tìm student" Click="SearchStudents_Click"/>
+                        <Button Width="110" Margin="10,0,0,0" Content="Tải lại" Click="ReloadStudents_Click"/>
+                    </StackPanel>
+
+                    <DataGrid x:Name="StudentGrid" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,0,0,12">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Code" Binding="{Binding StudentCode}" Width="120"/>
+                            <DataGridTextColumn Header="Full Name" Binding="{Binding FullName}" Width="180"/>
+                            <DataGridTextColumn Header="Email" Binding="{Binding Email}" Width="200"/>
+                            <DataGridTextColumn Header="Phone" Binding="{Binding PhoneNumber}" Width="130"/>
+                            <DataGridTextColumn Header="Gender" Binding="{Binding Gender}" Width="80"/>
+                            <DataGridTextColumn Header="Active" Binding="{Binding IsActive}" Width="80"/>
+                            <DataGridTemplateColumn Header="Action" Width="100">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Content="Detail" Tag="{Binding Id}" Click="StudentDetail_Click"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <Border x:Name="StudentDetailPanel" Grid.Row="2" Background="#F8FAFC" Padding="16" CornerRadius="12" Visibility="Collapsed">
+                        <StackPanel>
+                            <DockPanel Margin="0,0,0,12">
+                                <TextBlock Text="Student detail" FontSize="16" FontWeight="SemiBold" DockPanel.Dock="Left"/>
+                                <Button Content="Đóng" Width="80" HorizontalAlignment="Right" DockPanel.Dock="Right" Click="CloseStudentDetail_Click"/>
+                            </DockPanel>
+
+                            <TextBlock x:Name="StudentInfoText" TextWrapping="Wrap" Margin="0,0,0,10"/>
+                            <TextBlock x:Name="StudentSummaryText" FontWeight="SemiBold" Margin="0,0,0,10"/>
+
+                            <DataGrid x:Name="StudentEnrollmentGrid" AutoGenerateColumns="False" IsReadOnly="True" MinHeight="180">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Course" Binding="{Binding CourseCode}" Width="110"/>
+                                    <DataGridTextColumn Header="Course Name" Binding="{Binding CourseName}" Width="160"/>
+                                    <DataGridTextColumn Header="Class" Binding="{Binding ClassCode}" Width="110"/>
+                                    <DataGridTextColumn Header="Enroll Status" Binding="{Binding EnrollmentStatus}" Width="110"/>
+                                    <DataGridTextColumn Header="Class Status" Binding="{Binding ClassStatus}" Width="100"/>
+                                    <DataGridTextColumn Header="Teacher" Binding="{Binding TeacherName}" Width="150"/>
+                                    <DataGridTextColumn Header="Registered At" Binding="{Binding RegisteredAt, StringFormat=dd/MM/yyyy HH:mm}" Width="130"/>
+                                    <DataGridTextColumn Header="Class Time" Binding="{Binding StartDate, StringFormat=dd/MM/yyyy}" Width="100"/>
+                                    <DataGridTextColumn Header="End" Binding="{Binding EndDate, StringFormat=dd/MM/yyyy}" Width="100"/>
+                                    <DataGridTextColumn Header="Schedule" Binding="{Binding ScheduleText}" Width="260"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="Teachers">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                        <TextBox x:Name="TeacherKeywordTextBox" Width="280" Height="34" Margin="0,0,10,0" VerticalContentAlignment="Center"/>
+                        <Button Width="110" Content="Tìm teacher" Click="SearchTeachers_Click"/>
+                        <Button Width="110" Margin="10,0,0,0" Content="Tải lại" Click="ReloadTeachers_Click"/>
+                    </StackPanel>
+
+                    <DataGrid x:Name="TeacherGrid" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,0,0,12">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Code" Binding="{Binding TeacherCode}" Width="120"/>
+                            <DataGridTextColumn Header="Full Name" Binding="{Binding FullName}" Width="180"/>
+                            <DataGridTextColumn Header="Email" Binding="{Binding Email}" Width="200"/>
+                            <DataGridTextColumn Header="Phone" Binding="{Binding PhoneNumber}" Width="130"/>
+                            <DataGridTextColumn Header="Gender" Binding="{Binding Gender}" Width="80"/>
+                            <DataGridTextColumn Header="Active" Binding="{Binding IsActive}" Width="80"/>
+                            <DataGridTemplateColumn Header="Action" Width="100">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Content="Detail" Tag="{Binding Id}" Click="TeacherDetail_Click"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <Border x:Name="TeacherDetailPanel" Grid.Row="2" Background="#F8FAFC" Padding="16" CornerRadius="12" Visibility="Collapsed">
+                        <StackPanel>
+                            <DockPanel Margin="0,0,0,12">
+                                <TextBlock Text="Teacher detail" FontSize="16" FontWeight="SemiBold" DockPanel.Dock="Left"/>
+                                <Button Content="Đóng" Width="80" HorizontalAlignment="Right" DockPanel.Dock="Right" Click="CloseTeacherDetail_Click"/>
+                            </DockPanel>
+
+                            <TextBlock x:Name="TeacherInfoText" TextWrapping="Wrap" Margin="0,0,0,10"/>
+                            <TextBlock x:Name="TeacherSummaryText" FontWeight="SemiBold" Margin="0,0,0,10"/>
+
+                            <DataGrid x:Name="TeacherClassGrid" AutoGenerateColumns="False" IsReadOnly="True" MinHeight="180">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Course" Binding="{Binding CourseCode}" Width="110"/>
+                                    <DataGridTextColumn Header="Course Name" Binding="{Binding CourseName}" Width="160"/>
+                                    <DataGridTextColumn Header="Class" Binding="{Binding ClassCode}" Width="110"/>
+                                    <DataGridTextColumn Header="Start" Binding="{Binding StartDate, StringFormat=dd/MM/yyyy}" Width="100"/>
+                                    <DataGridTextColumn Header="End" Binding="{Binding EndDate, StringFormat=dd/MM/yyyy}" Width="100"/>
+                                    <DataGridTextColumn Header="Capacity" Binding="{Binding Capacity}" Width="80"/>
+                                    <DataGridTextColumn Header="Approved" Binding="{Binding ApprovedEnrollmentCount}" Width="80"/>
+                                    <DataGridTextColumn Header="Pending" Binding="{Binding PendingEnrollmentCount}" Width="80"/>
+                                    <DataGridTextColumn Header="Status" Binding="{Binding ClassStatus}" Width="90"/>
+                                    <DataGridTextColumn Header="Schedule" Binding="{Binding ScheduleText}" Width="300"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
 </UserControl>

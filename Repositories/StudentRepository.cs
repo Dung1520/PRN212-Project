@@ -13,6 +13,9 @@ namespace Repositories
         public Student? GetStudentById(int id)
             => _dao.GetStudentById(id);
 
+        public AdminStudentDetailDto? GetStudentDetailById(int id)
+            => _dao.GetStudentDetailById(id);
+
         public Student? GetByEmail(string email)
             => _dao.GetByEmail(email);
 
