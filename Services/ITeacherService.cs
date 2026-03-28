@@ -12,5 +12,6 @@ namespace Services
         List<TeacherListItem> GetTeacherList(string? keyword = null);
         List<Teacher> GetAllTeachers();
         Teacher? GetTeacherById(int id);
+        OperationResult UpdateOwnProfile(Teacher teacher);
     }
 }

@@ -51,5 +51,43 @@ namespace DataAccess
             return context.Students
                 .FirstOrDefault(x => x.Email == email && x.IsActive);
         }
+
+
+        public OperationResult UpdateOwnProfile(Student student)
+        {
+            try
+            {
+                using var context = DbContextFactory.CreateDbContext();
+
+                var existing = context.Students.FirstOrDefault(x => x.Id == student.Id);
+                if (existing == null)
+                    return OperationResult.Failure("Không tìm thấy sinh viên.");
+
+                if (!existing.IsActive)
+                    return OperationResult.Failure("Tài khoản sinh viên đang bị khóa.");
+
+                var duplicatedEmail = context.Students.Any(x =>
+                    x.Id != student.Id &&
+                    x.Email.ToLower() == student.Email.ToLower());
+
+                if (duplicatedEmail)
+                    return OperationResult.Failure("Email đã được sử dụng bởi tài khoản khác.");
+
+                // Chỉ cho sửa thông tin cá nhân
+                existing.FullName = student.FullName;
+                existing.Email = student.Email;
+                existing.PhoneNumber = student.PhoneNumber;
+                existing.DateOfBirth = student.DateOfBirth;
+                existing.Gender = student.Gender;
+                existing.Address = student.Address;
+
+                context.SaveChanges();
+                return OperationResult.Success("Cập nhật hồ sơ thành công.");
+            }
+            catch (Exception ex)
+            {
+                return OperationResult.Failure($"Lỗi khi cập nhật hồ sơ sinh viên: {ex.Message}");
+            }
+        }
     }
 }

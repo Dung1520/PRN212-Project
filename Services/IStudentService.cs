@@ -6,5 +6,6 @@ namespace Services
     {
         List<StudentListItem> GetStudentList(string? keyword = null);
         Student? GetStudentById(int id);
+        OperationResult UpdateOwnProfile(Student student);
     }
 }

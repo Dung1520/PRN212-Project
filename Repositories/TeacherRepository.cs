@@ -27,5 +27,8 @@ namespace Repositories
             => _dao.GetTeacherById(id);
         public Teacher? GetByEmail(string email)
         => _dao.GetByEmail(email);
+
+        public OperationResult UpdateOwnProfile(Teacher teacher)
+            => _dao.UpdateOwnProfile(teacher);
     }
 }

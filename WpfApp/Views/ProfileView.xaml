@@ -2,9 +2,154 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Border Background="#F8FAFC" Padding="20" CornerRadius="12">
-        <StackPanel>
-            <TextBlock Text="Hồ sơ người dùng" FontSize="26" FontWeight="Bold" Margin="0,0,0,12"/>
-            <TextBlock x:Name="ProfileText" TextWrapping="Wrap" FontSize="15"/>
-        </StackPanel>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="16"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0">
+                <TextBlock Text="Hồ sơ người dùng"
+                           FontSize="26"
+                           FontWeight="Bold"
+                           Margin="0,0,0,8"/>
+
+            </StackPanel>
+
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="280"/>
+                    <ColumnDefinition Width="24"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Left info -->
+                <Border Grid.Column="0"
+                        Background="White"
+                        CornerRadius="12"
+                        BorderBrush="#E2E8F0"
+                        BorderThickness="1"
+                        Padding="16">
+                    <StackPanel>
+                        <TextBlock Text="Thông tin tài khoản"
+                                   FontSize="18"
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,0,14"/>
+
+                        <TextBlock Text="Role" FontWeight="SemiBold"/>
+                        <TextBlock x:Name="RoleText" Margin="0,0,0,10"/>
+
+                        <TextBlock Text="Username" FontWeight="SemiBold"/>
+                        <TextBlock x:Name="UsernameText" Margin="0,0,0,10"/>
+
+                        <TextBlock Text="Email đăng nhập hiện tại" FontWeight="SemiBold"/>
+                        <TextBlock x:Name="CurrentEmailText" Margin="0,0,0,10"/>
+
+                        <TextBlock Text="Mã định danh" FontWeight="SemiBold"/>
+                        <TextBlock x:Name="CodeText" Margin="0,0,0,10"/>
+
+                        <TextBlock Text="Ghi chú" FontWeight="SemiBold"/>
+                        <TextBlock x:Name="NoteText"
+                                   TextWrapping="Wrap"
+                                   Foreground="#64748B"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Right edit form -->
+                <Border Grid.Column="2"
+                        Background="White"
+                        CornerRadius="12"
+                        BorderBrush="#E2E8F0"
+                        BorderThickness="1"
+                        Padding="20">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="14"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="14"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="14"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="14"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="14"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="14"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="18"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="12"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="160"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.ColumnSpan="2"
+                                   Text="Thông tin cá nhân"
+                                   FontSize="18"
+                                   FontWeight="SemiBold"/>
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Họ và tên" VerticalAlignment="Center"/>
+                        <TextBox x:Name="FullNameTextBox" Grid.Row="2" Grid.Column="1" Height="34"/>
+
+                        <TextBlock Grid.Row="4" Grid.Column="0" Text="Email" VerticalAlignment="Center"/>
+                        <TextBox x:Name="EmailTextBox" Grid.Row="4" Grid.Column="1" Height="34"/>
+
+                        <TextBlock Grid.Row="6" Grid.Column="0" Text="Số điện thoại" VerticalAlignment="Center"/>
+                        <TextBox x:Name="PhoneTextBox" Grid.Row="6" Grid.Column="1" Height="34"/>
+
+                        <TextBlock Grid.Row="8" Grid.Column="0" Text="Ngày sinh" VerticalAlignment="Center"/>
+                        <DatePicker x:Name="DobDatePicker" Grid.Row="8" Grid.Column="1" Height="34"/>
+
+                        <TextBlock Grid.Row="10" Grid.Column="0" Text="Giới tính" VerticalAlignment="Center"/>
+                        <ComboBox x:Name="GenderComboBox" Grid.Row="10" Grid.Column="1" Height="34">
+                            <ComboBoxItem Content=""/>
+                            <ComboBoxItem Content="Male"/>
+                            <ComboBoxItem Content="Female"/>
+                            <ComboBoxItem Content="Other"/>
+                        </ComboBox>
+
+                        <TextBlock Grid.Row="12" Grid.Column="0" Text="Địa chỉ" VerticalAlignment="Top"/>
+                        <TextBox x:Name="AddressTextBox"
+                                 Grid.Row="12"
+                                 Grid.Column="1"
+                                 Height="80"
+                                 AcceptsReturn="True"
+                                 TextWrapping="Wrap"
+                                 VerticalScrollBarVisibility="Auto"/>
+
+                        <TextBlock x:Name="MessageTextBlock"
+                                   Grid.Row="14"
+                                   Grid.ColumnSpan="2"
+                                   Foreground="#DC2626"
+                                   FontWeight="SemiBold"
+                                   TextWrapping="Wrap"/>
+
+                        <StackPanel Grid.Row="16" Grid.ColumnSpan="2"
+                                    Orientation="Horizontal"
+                                    HorizontalAlignment="Right">
+                            <Button x:Name="RefreshButton"
+                                    Content="Tải lại"
+                                    Width="100"
+                                    Height="36"
+                                    Margin="0,0,10,0"
+                                    Click="RefreshButton_Click"/>
+                            <Button x:Name="SaveButton"
+                                    Content="Lưu thay đổi"
+                                    Width="130"
+                                    Height="36"
+                                    Background="#2563EB"
+                                    Foreground="White"
+                                    Click="SaveButton_Click"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
     </Border>
 </UserControl>

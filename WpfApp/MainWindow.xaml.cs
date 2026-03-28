@@ -1,4 +1,5 @@
 ﻿using BusinessObjects;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -32,7 +33,7 @@ namespace WpfApp
         {
             _currentUser = user;
             _cache.Clear();
-            UserInfoText.Text = $"{user.FullName}\nRole: {user.Role}\n{user.Email}";
+            RefreshUserInfo();
             NavListBox.Visibility = Visibility.Visible;
             LogoutButton.Visibility = Visibility.Visible;
 
@@ -40,6 +41,17 @@ namespace WpfApp
             NavListBox.ItemsSource = menu;
             NavListBox.DisplayMemberPath = "Title";
             NavListBox.SelectedIndex = 0;
+        }
+
+        private void RefreshUserInfo()
+        {
+            if (_currentUser == null)
+            {
+                UserInfoText.Text = "Chưa đăng nhập";
+                return;
+            }
+
+            UserInfoText.Text = $"{_currentUser.FullName}\nRole: {_currentUser.Role}\n{_currentUser.Email}";
         }
 
         private List<MenuItemVm> BuildMenu(string role)
@@ -96,7 +108,7 @@ namespace WpfApp
                     : new StudentEnrollmentsView(_currentUser),
                 "people" => new AdminPeopleView(),
                 "schedule" => new ScheduleView(_currentUser),
-                "profile" => new ProfileView(_currentUser),
+                "profile" => new ProfileView(_currentUser, RefreshUserInfo),
                 _ => new UserControl
                 {
                     Content = new TextBlock

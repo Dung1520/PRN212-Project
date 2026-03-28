@@ -15,5 +15,6 @@ namespace Repositories
         List<Teacher> GetAllTeachers();
         Teacher? GetTeacherById(int id);
         Teacher? GetByEmail(string email);
+        OperationResult UpdateOwnProfile(Teacher teacher);
     }
 }

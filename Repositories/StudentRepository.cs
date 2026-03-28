@@ -15,5 +15,7 @@ namespace Repositories
 
         public Student? GetByEmail(string email)
         => _dao.GetByEmail(email);
+        public OperationResult UpdateOwnProfile(Student student)
+    => _dao.UpdateOwnProfile(student);
     }
 }
