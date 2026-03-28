@@ -22,7 +22,7 @@ namespace WpfApp.Views
 
             _aiService = new AiCourseAdvisorService(
                 new StudentCourseService(),
-                new LmStudioRecommendationProvider("phogpt-4b-chat"));
+                new LmStudioRecommendationProvider("qwen/qwen3-vl-4b"));
 
             LoadCourses();
             ShowListOnly();
