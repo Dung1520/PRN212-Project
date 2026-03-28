@@ -1,5 +1,4 @@
 ﻿using BusinessObjects;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -22,6 +21,7 @@ namespace WpfApp
         private void ShowLogin()
         {
             _currentUser = null;
+            _cache.Clear();
             UserInfoText.Text = "Chưa đăng nhập";
             NavListBox.ItemsSource = null;
             NavListBox.Visibility = Visibility.Collapsed;
@@ -33,7 +33,7 @@ namespace WpfApp
         {
             _currentUser = user;
             _cache.Clear();
-            RefreshUserInfo();
+            UserInfoText.Text = $"{user.FullName}\nRole: {user.Role}\n{user.Email}";
             NavListBox.Visibility = Visibility.Visible;
             LogoutButton.Visibility = Visibility.Visible;
 
@@ -41,17 +41,6 @@ namespace WpfApp
             NavListBox.ItemsSource = menu;
             NavListBox.DisplayMemberPath = "Title";
             NavListBox.SelectedIndex = 0;
-        }
-
-        private void RefreshUserInfo()
-        {
-            if (_currentUser == null)
-            {
-                UserInfoText.Text = "Chưa đăng nhập";
-                return;
-            }
-
-            UserInfoText.Text = $"{_currentUser.FullName}\nRole: {_currentUser.Role}\n{_currentUser.Email}";
         }
 
         private List<MenuItemVm> BuildMenu(string role)
@@ -108,7 +97,7 @@ namespace WpfApp
                     : new StudentEnrollmentsView(_currentUser),
                 "people" => new AdminPeopleView(),
                 "schedule" => new ScheduleView(_currentUser),
-                "profile" => new ProfileView(_currentUser, RefreshUserInfo),
+                "profile" => new ProfileView(_currentUser),
                 _ => new UserControl
                 {
                     Content = new TextBlock
@@ -133,6 +122,25 @@ namespace WpfApp
 
             MainContent.Content = ResolvePage(key, forceReload);
             NavListBox.SelectedItem = target;
+        }
+
+        public void InvalidatePage(string key)
+        {
+            if (_cache.ContainsKey(key))
+            {
+                _cache.Remove(key);
+            }
+        }
+
+        public void InvalidatePages(params string[] keys)
+        {
+            foreach (var key in keys)
+            {
+                if (_cache.ContainsKey(key))
+                {
+                    _cache.Remove(key);
+                }
+            }
         }
 
         private void NavListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)

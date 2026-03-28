@@ -21,22 +21,40 @@ namespace WpfApp.Views
         }
 
         private void Search_Click(object sender, RoutedEventArgs e) => LoadData();
-        private void Reload_Click(object sender, RoutedEventArgs e) { KeywordTextBox.Text = string.Empty; StatusComboBox.SelectedIndex = 0; LoadData(); }
+
+        private void Reload_Click(object sender, RoutedEventArgs e)
+        {
+            KeywordTextBox.Text = string.Empty;
+            StatusComboBox.SelectedIndex = 0;
+            LoadData();
+        }
 
         private void Approve_Click(object sender, RoutedEventArgs e)
         {
             var id = int.Parse(((Button)sender).Tag.ToString()!);
             var result = _service.ApproveEnrollment(id);
-            MessageBox.Show(result.Message);
             LoadData();
+
+            if (Application.Current.MainWindow is MainWindow mainWindow)
+            {
+                mainWindow.InvalidatePages("home", "registrations", "courses", "schedule");
+            }
+
+            MessageBox.Show(result.Message);
         }
 
         private void Reject_Click(object sender, RoutedEventArgs e)
         {
             var id = int.Parse(((Button)sender).Tag.ToString()!);
             var result = _service.RejectEnrollment(id);
-            MessageBox.Show(result.Message);
             LoadData();
+
+            if (Application.Current.MainWindow is MainWindow mainWindow)
+            {
+                mainWindow.InvalidatePages("home", "registrations", "courses", "schedule");
+            }
+
+            MessageBox.Show(result.Message);
         }
     }
 }

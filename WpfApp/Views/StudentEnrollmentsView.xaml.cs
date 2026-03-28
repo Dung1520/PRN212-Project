@@ -17,16 +17,27 @@ namespace WpfApp.Views
             LoadData();
         }
 
-        private void LoadData() => EnrollmentGrid.ItemsSource = _service.GetStudentEnrollments(_user.UserId);
+        private void LoadData()
+        {
+            EnrollmentGrid.ItemsSource = _service.GetStudentEnrollments(_user.UserId);
+        }
 
         private void Cancel_Click(object sender, RoutedEventArgs e)
         {
             var classId = int.Parse(((Button)sender).Tag.ToString()!);
+
             try
             {
                 _service.CancelEnrollment(_user.UserId, classId);
-                MessageBox.Show("Hủy đăng ký thành công.");
                 LoadData();
+
+                if (Application.Current.MainWindow is MainWindow mainWindow)
+                {
+                    // Hủy đăng ký cũng làm thay đổi thống kê tổng quan
+                    mainWindow.InvalidatePages("home", "courses", "registrations", "schedule");
+                }
+
+                MessageBox.Show("Hủy đăng ký thành công.");
             }
             catch (System.Exception ex)
             {

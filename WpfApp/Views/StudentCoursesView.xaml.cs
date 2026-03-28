@@ -1,6 +1,8 @@
 ﻿using BusinessObjects;
 using Services;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -12,6 +14,7 @@ namespace WpfApp.Views
         private readonly IStudentCourseService _service = new StudentCourseService();
         private int? _currentCourseId;
         private readonly IAiCourseAdvisorService _aiService;
+
         public StudentCoursesView(LoginUser user)
         {
             InitializeComponent();
@@ -112,22 +115,25 @@ namespace WpfApp.Views
             {
                 _service.RegisterClass(_user.UserId, classId);
 
-                MessageBox.Show("Đăng ký thành công. Hệ thống sẽ chuyển sang màn 'Đăng ký của tôi'.");
-
                 if (Application.Current.MainWindow is MainWindow mainWindow)
                 {
+                    // Xóa cache các màn bị ảnh hưởng sau khi đăng ký
+                    mainWindow.InvalidatePages("home", "courses", "registrations", "schedule");
                     mainWindow.NavigateTo("registrations", true);
                 }
                 else if (_currentCourseId.HasValue)
                 {
                     ShowAvailableClassPanel(_currentCourseId.Value);
                 }
+
+                MessageBox.Show("Đăng ký thành công. Số liệu Tổng quan sẽ tự cập nhật khi bạn quay lại màn đó.");
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
             }
         }
+
         private async void AiRecommend_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -172,7 +178,7 @@ namespace WpfApp.Views
             }
         }
 
-        private BusinessObjects.AiRecommendationCandidateDto? FindCandidateById(int classId, int studentId)
+        private AiRecommendationCandidateDto? FindCandidateById(int classId, int studentId)
         {
             var courses = _service.GetCourses(null, "Open");
 
@@ -185,7 +191,7 @@ namespace WpfApp.Views
                 var cls = classes.FirstOrDefault(x => x.Id == classId);
                 if (cls != null)
                 {
-                    return new BusinessObjects.AiRecommendationCandidateDto
+                    return new AiRecommendationCandidateDto
                     {
                         CandidateId = cls.Id,
                         CourseId = course.Id,
