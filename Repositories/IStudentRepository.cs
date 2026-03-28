@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using BusinessObjects;
+﻿using BusinessObjects;
 
 namespace Repositories
 {
@@ -14,5 +8,6 @@ namespace Repositories
         Student? GetStudentById(int id);
         Student? GetByEmail(string email);
         OperationResult UpdateOwnProfile(Student student);
+        OperationResult RegisterStudent(Student student);
     }
 }

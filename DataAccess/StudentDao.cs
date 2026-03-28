@@ -52,6 +52,53 @@ namespace DataAccess
                 .FirstOrDefault(x => x.Email == email && x.IsActive);
         }
 
+        public OperationResult RegisterStudent(Student student)
+        {
+            try
+            {
+                using var context = DbContextFactory.CreateDbContext();
+                using var transaction = context.Database.BeginTransaction();
+
+                var normalizedUsername = student.Username.Trim().ToLower();
+                var normalizedEmail = student.Email.Trim().ToLower();
+
+                var duplicatedUsername =
+                    context.Students.Any(x => x.Username.ToLower() == normalizedUsername) ||
+                    context.Teachers.Any(x => x.Username.ToLower() == normalizedUsername) ||
+                    context.Admins.Any(x => x.Username.ToLower() == normalizedUsername);
+
+                if (duplicatedUsername)
+                    return OperationResult.Failure("Username đã tồn tại trong hệ thống.");
+
+                var duplicatedEmail =
+                    context.Students.Any(x => x.Email.ToLower() == normalizedEmail) ||
+                    context.Teachers.Any(x => x.Email.ToLower() == normalizedEmail) ||
+                    context.Admins.Any(x => x.Email.ToLower() == normalizedEmail);
+
+                if (duplicatedEmail)
+                    return OperationResult.Failure("Email đã tồn tại trong hệ thống.");
+
+                student.StudentCode = GenerateNextStudentCode(context);
+                student.IsActive = true;
+                student.CreatedAt = DateTime.Now;
+
+                context.Students.Add(student);
+                context.SaveChanges();
+                transaction.Commit();
+
+                return OperationResult.Success(
+                    $"Đăng ký tài khoản thành công. Mã học viên của bạn là {student.StudentCode}.");
+            }
+            catch (DbUpdateException ex)
+            {
+                return OperationResult.Failure(
+                    $"Không thể lưu dữ liệu xuống database: {ex.InnerException?.Message ?? ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                return OperationResult.Failure($"Lỗi khi đăng ký tài khoản: {ex.Message}");
+            }
+        }
 
         public OperationResult UpdateOwnProfile(Student student)
         {
@@ -73,7 +120,6 @@ namespace DataAccess
                 if (duplicatedEmail)
                     return OperationResult.Failure("Email đã được sử dụng bởi tài khoản khác.");
 
-                // Chỉ cho sửa thông tin cá nhân
                 existing.FullName = student.FullName;
                 existing.Email = student.Email;
                 existing.PhoneNumber = student.PhoneNumber;
@@ -88,6 +134,23 @@ namespace DataAccess
             {
                 return OperationResult.Failure($"Lỗi khi cập nhật hồ sơ sinh viên: {ex.Message}");
             }
+        }
+
+        private static string GenerateNextStudentCode(LctmsDbContext context)
+        {
+            var existingNumbers = context.Students
+                .AsNoTracking()
+                .Select(x => x.StudentCode)
+                .Where(x => x.StartsWith("ST"))
+                .AsEnumerable()
+                .Select(code =>
+                {
+                    var numberPart = code.Length > 2 ? code[2..] : string.Empty;
+                    return int.TryParse(numberPart, out var value) ? value : 0;
+                });
+
+            var nextNumber = existingNumbers.Any() ? existingNumbers.Max() + 1 : 1;
+            return $"ST{nextNumber:000}";
         }
     }
 }

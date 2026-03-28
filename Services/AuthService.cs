@@ -23,7 +23,7 @@ namespace Services
             {
                 return new LoginUser
                 {
-                    UserId = 0, // Admin mặc định không nhất thiết phải có record trong DB
+                    UserId = 0, 
                     Role = "Admin",
                     Username = "admin",
                     FullName = "System Administrator",
